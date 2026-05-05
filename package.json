@@ -15,7 +15,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --coverage --collectCoverageFrom=src/**/*js[x] --collectCoverageFrom=!src/reportWebVitals.js --collectCoverageFrom=!src/index.js",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {
@@ -35,5 +35,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "react-test-renderer": "^19.2.5"
   }
 }

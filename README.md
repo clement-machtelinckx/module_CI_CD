@@ -1,70 +1,31 @@
-# Getting Started with Create React App
+Les règles de validation : 
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+La date de naissance bloque les -18 ans, 
 
-## Available Scripts
+Le code postal doit être au format français (5 chiffres), 
 
-In the project directory, you can run:
+Les champs nom, prénom et ville doivent être valides (sans caractère spéciaux et chiffres mais accepter les accents, tréma, tiret, etc), 
 
-### `npm start`
+L’email doit être valide
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Les fonctions de vérification sont dans un fichier js à part qui sera totalement testé. Les composants React également. La couverture attendue est de 100% (index.js et reportWebVitals exclus) avec tous les tests unitaires et d’intégrations passant avec succès. Une documentation complète à fournir. La fiabilité des tests sera prise en compte.
 
-### `npm test`
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Les tests à avoir au minimum : 
 
-### `npm run build`
+Le calcul de l'âge
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+L'âge > 18 ans
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+Le format du code postal
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Le format du nom, prénom et ville (avec différents cas particulier)
 
-### `npm run eject`
+Le format de l’email
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+La désactivation du bouton si les champs ne sont pas remplis
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Le toaster de succès, avec champs vidés
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Les erreurs correspondantes en rouge
