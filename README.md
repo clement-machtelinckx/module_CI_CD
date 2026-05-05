@@ -1,3 +1,18 @@
+# TP formulaire d'inscription React
+
+## énoncer
+Mise en Pratique :
+
+En react, faites un petit projet permettant à un utilisateur de s’enregistrer sur un formulaire avec nom, prénom, mail, date de naissance, ville, code postal et un bouton de sauvegarde, et de voir la liste des inscrits.
+
+
+Le bouton est non clickable tant que les champs précédents ne sont pas remplis.
+
+Sous chaque champ on affiche un message d’erreur si celui-ci n’est pas valide.
+
+Si les champs sont valides, on affiche un toaster de succès, puis on vide les champs.
+
+
 Les règles de validation : 
 
 La date de naissance bloque les -18 ans, 
@@ -29,3 +44,59 @@ La désactivation du bouton si les champs ne sont pas remplis
 Le toaster de succès, avec champs vidés
 
 Les erreurs correspondantes en rouge
+
+
+L'utilisateur peut saisir :
+
+- son nom
+- son prenom
+- son mail
+- sa date de naissance
+- sa ville
+- son code postal
+
+Si le formulaire est valide :
+
+- le bouton sauvegarde enregistre l'utilisateur
+- un message de succes s'affiche
+- les champs sont vides
+- l'utilisateur est ajoute dans la liste des inscrits
+- la liste est sauvegardee dans le `localStorage`
+
+## Lancer le projet
+
+```bash
+npm start
+```
+
+## Lancer les tests
+
+```bash
+npm test 
+```
+
+
+## Couverture
+
+exclus de la couverture sont :
+
+- `src/index.js`
+- `src/reportWebVitals.js`
+- `src/setupTests.js`
+- les fichiers `*.test.*`
+
+## Tests presents
+
+Les tests verifient :
+
+- le calcul de l'age
+- la majorite a partir de 18 ans
+- le format du code postal
+- le format du nom, du prenom et de la ville avec plusieurs cas
+- le format de l'email
+- le bouton desactive si les champs ne sont pas remplis
+- le message de succes
+- le vidage des champs apres validation
+- l'affichage des erreurs en rouge
+- l'ajout dans la liste des inscrits
+- le chargement depuis le `localStorage`

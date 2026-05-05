@@ -1,162 +1,107 @@
+import {
+    calculateAge,
+    isCPValid,
+    isEmailValid,
+    isStringValide,
+    isUserMajeur,
+} from './module.js';
 
-const { calculateAge } = require('./module.js');
-
-/*
-* @function calculateAge
-* @description Calculates the age of a person based on their birth date.
-* @param {Object} p - The person object with a birth date.
-* @returns {number} The calculated age.
-*/
-
-describe('calculateAge Unit Test Suites', () => {
-
-    it('should return the correct age', () => {
-        const loise =  {
-            birth: new Date('1991-03-22')
-        };
-        expect(calculateAge(loise)).toEqual(35);
-    })
-        // test TDD
-     it('should throw a "missing param p" error', () => {
-        expect(() => calculateAge()).toThrow("missing param p")
-    })
-        // test calculateAge with no argument 
-    it('should throw an error if not argument is passed', () => {
-        expect(() => calculateAge()).toThrow();
-     })
-        // test argument not an object 
-    it('should throw an error if argument is not an object', () => {
-        expect(() => calculateAge("not an object")).toThrow();
-     })
-
-      // no birth property in the object
-    it ('should throw error object do not contain birth property', () => {
-        expect(() => calculateAge({})).toThrow();
-     })
-        // birth property is not a date
-    it('should trhow an error birth not a date', () => {
-        expect(() => calculateAge({ birth: 23 })).toThrow();
-     })
-     
-     // test date wrong format
-    it('should throw an error if birth date is not valid', () => {
-    const result = calculateAge({ birth: new Date('1991-03-33') });
-    expect(result).toBeNaN();
+describe('module utils', () => {
+    beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date('2026-05-05T12:00:00Z'));
     });
 
-    // test ok si passr next year
-    it ("should work next year", () => {
-        const loise = {
-            birth: new Date('1991-03-22')
-        };
-        birthYear = loise.birth.getUTCFullYear();
-        console.log(birthYear);
-        const currentYear = new Date().getUTCFullYear();
-        console.log(currentYear);
-        const expectedAge = currentYear - birthYear;
-        expect(calculateAge(loise)).toEqual(expectedAge);
-
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
+    describe('calculateAge', () => {
+        it('returns the correct age when the birthday already passed', () => {
+            expect(calculateAge({ birth: new Date('1991-03-22T12:00:00Z') })).toBe(35);
+        });
 
-});
+        it('subtracts one year when the birthday has not passed yet', () => {
+            expect(calculateAge({ birth: new Date('2008-12-01T12:00:00Z') })).toBe(17);
+        });
 
+        it('throws when the parameter is missing', () => {
+            expect(() => calculateAge()).toThrow('missing param p');
+        });
 
+        it('throws when the parameter shape is invalid', () => {
+            expect(() => calculateAge('not-an-object')).toThrow('invalid param p');
+            expect(() => calculateAge({})).toThrow('invalid param p');
+            expect(() => calculateAge({ birth: '1991-03-22' })).toThrow('invalid param p');
+        });
 
+        it('returns NaN when the birth date is invalid', () => {
+            expect(calculateAge({ birth: new Date('invalid') })).toBeNaN();
+        });
+    });
 
+    describe('isUserMajeur', () => {
+        it('returns true for an adult user', () => {
+            expect(isUserMajeur({ birth: new Date('2000-01-01T12:00:00Z') })).toBe(true);
+        });
 
+        it('returns false for a minor user', () => {
+            expect(isUserMajeur({ birth: new Date('2008-12-01T12:00:00Z') })).toBe(false);
+        });
 
-// _____________________________________
-// toBe
-test('deux plus deux font quatre', () => {
- expect(2 + 2).toBe(4);
-});
+        it('throws when the parameter is missing', () => {
+            expect(() => isUserMajeur()).toThrow('missing param p');
+        });
+    });
 
-// toEqual
-test('object assignment', () => {
- const data = {one: 1};
- data['two'] = 2;
- expect(data).toEqual({one: 1, two: 2});
-});
+    describe('isCPValid', () => {
+        it('accepts a French postal code with exactly five digits', () => {
+            expect(isCPValid('75001')).toBe(true);
+        });
 
-// not
-test('l\'addition de nombres positifs n\'est pas égale à zéro', () => {
- for (let a = 1; a < 10; a++) {
- for (let b = 1; b < 10; b++) {
- expect(a + b).not.toBe(0);
- }
- }
-});
+        it('rejects postal codes with the wrong format', () => {
+            expect(isCPValid('7500')).toBe(false);
+            expect(isCPValid('7500A')).toBe(false);
+            expect(isCPValid('75 001')).toBe(false);
+        });
 
-// Valeurs de vérités - null
-test('null', () => {
- const n = null;
- expect(n).toBeNull();
- expect(n).toBeDefined();
- expect(n).not.toBeUndefined();
- expect(n).not.toBeTruthy();
- expect(n).toBeFalsy();
-});
+        it('throws when the parameter is missing', () => {
+            expect(() => isCPValid()).toThrow('missing param cp');
+        });
+    });
 
-// Valeurs de vérités - zero
-test('zero', () => {
- const z = 0;
- expect(z).not.toBeNull();
- expect(z).toBeDefined();
- expect(z).not.toBeUndefined();
- expect(z).not.toBeTruthy();
- expect(z).toBeFalsy();
-});
+    describe('isEmailValid', () => {
+        it('accepts a valid email address', () => {
+            expect(isEmailValid('john.doe@example.com')).toBe(true);
+        });
 
+        it('rejects invalid email addresses', () => {
+            expect(isEmailValid('john.doe')).toBe(false);
+            expect(isEmailValid('john.doe@')).toBe(false);
+            expect(isEmailValid('john.doe@example')).toBe(false);
+        });
 
-// Nombres
-test('deux plus deux', () => {
- const value = 2 + 2;
- expect(value).toBeGreaterThan(3);
- expect(value).toBeGreaterThanOrEqual(3.5);
- expect(value).toBeLessThan(5);
- expect(value).toBeLessThanOrEqual(4.5);
- // toBe et toEqual sont équivalents pour les nombres
- expect(value).toBe(4);
- expect(value).toEqual(4);
-});
+        it('throws when the parameter is missing', () => {
+            expect(() => isEmailValid()).toThrow('missing param email');
+        });
+    });
 
+    describe('isStringValide', () => {
+        it('accepts names and cities with accents, spaces, apostrophes and hyphens', () => {
+            expect(isStringValide('Élodie')).toBe(true);
+            expect(isStringValide("L'Haÿ-les-Roses")).toBe(true);
+            expect(isStringValide('Saint Étienne')).toBe(true);
+        });
 
-// toBeCloseTo
-test('ajout de nombres à virgule flottantes', () => {
- const value = 0.1 + 0.2;
- //expect(value).toBe(0.3); Cela ne fonctionnera pas en raison d'une erreur d'arrondi
- expect(value).toBeCloseTo(0.3); // Cela fonctionne.
-});
+        it('rejects strings with digits or invalid special characters', () => {
+            expect(isStringValide('Jean2')).toBe(false);
+            expect(isStringValide('Paris!')).toBe(false);
+            expect(isStringValide('   ')).toBe(false);
+            expect(isStringValide(42)).toBe(false);
+        });
 
-// Strings
-test("il n'y a pas de I dans team", () => {
- expect('team').not.toMatch(/I/);
-});
-test('mais il y a "stop" dans Christoph', () => {
- expect('Christoph').toMatch(/stop/);
-});
-
-// Tableau et itérable
-const shoppingList = ['diapers','kleenex','trash bags','paper towels','milk'];
-test('la liste de course possède du lait', () => {
- expect(shoppingList).toContain('milk');
- expect(new Set(shoppingList)).toContain('milk');
-});
-
-// Exceptions
-function compileAndroidCode() { throw new Error('vous utilisez le mauvais JDK!');}
-test("la compilation d'android se déroule comme prévue", () => {
- expect(() => compileAndroidCode()).toThrow();
- expect(() => compileAndroidCode()).toThrow(Error);
-});
-
-// Exceptions
-test("la compilation d'android se déroule comme prévue", () => {
- // Vous pouvez aussi utiliser une chaîne de caractère qui doit être contenue dans le message d'erreur, ouun RegExp
- expect(() => compileAndroidCode()).toThrow('vous utilisez le mauvais JDK!');
- expect(() => compileAndroidCode()).toThrow(/JDK/);
- // Ou vous pouvez faire correspondre un message d'erreur spécifique en utilisant un RegExp commeci-dessous
- expect(() => compileAndroidCode()).toThrow(/^vous utilisez le mauvais JDK!$/);
- expect(() => compileAndroidCode()).toThrow(/^vous utilisez le mauvais JDK!$/); // Test passé
+        it('throws when the parameter is missing', () => {
+            expect(() => isStringValide()).toThrow('missing param str');
+        });
+    });
 });

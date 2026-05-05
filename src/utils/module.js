@@ -1,9 +1,8 @@
 /**
  * Calculates the age of a person based on their birth date.
- * @param {Object} p - The person object with a birth date.
- * @returns {number} The calculated age.
+ * @param {Object} p - Object contenant une propriété "birth" (Date).
+ * @returns {number} L'âge calculé ou NaN si la date est invalide.
  */
-
 export function calculateAge(p) {
     if (!p) {
         throw new Error("missing param p");
@@ -23,6 +22,7 @@ export function calculateAge(p) {
     let age = today.getFullYear() - p.birth.getFullYear();
     const monthDiff = today.getMonth() - p.birth.getMonth();
 
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < p.birth.getDate())) {
         age -= 1;
     }
@@ -30,6 +30,11 @@ export function calculateAge(p) {
     return age;
 }
 
+/**
+ * Vérifie si un code postal est valide (format français).
+ * @param {string|number} cp - Code postal à vérifier.
+ * @returns {boolean} true si valide, false sinon.
+ */
 export function isCPValid(cp) {
     if (!cp) {
         throw new Error("missing param cp");
@@ -40,6 +45,11 @@ export function isCPValid(cp) {
     return cpRegex.test(String(cp).trim());
 }
 
+/**
+ * Vérifie si un utilisateur est majeur (>= 18 ans).
+ * @param {Object} p - Object contenant une propriété "birth" (Date).
+ * @returns {boolean} true si majeur, false sinon.
+ */
 export function isUserMajeur(p) {
     if (!p) {
         throw new Error("missing param p");
@@ -50,6 +60,11 @@ export function isUserMajeur(p) {
     return age >= 18;
 }
 
+/**
+ * Vérifie si un email est valide.
+ * @param {string} email - Email à vérifier.
+ * @returns {boolean} true si valide, false sinon.
+ */
 export function isEmailValid(email) {
     if (!email) {
         throw new Error("missing param email");
@@ -60,6 +75,12 @@ export function isEmailValid(email) {
     return emailRegex.test(String(email).trim());
 }
 
+/**
+ * Vérifie si une chaîne est valide (nom, prénom, ville).
+ * Autorise lettres, accents, espaces, tirets et apostrophes.
+ * @param {string} str - Chaîne à vérifier.
+ * @returns {boolean} true si valide, false sinon.
+ */
 export function isStringValide(str) {
     if (!str) {
         throw new Error("missing param str");
@@ -74,4 +95,3 @@ export function isStringValide(str) {
 
     return validStringRegex.test(normalizedValue);
 }
-

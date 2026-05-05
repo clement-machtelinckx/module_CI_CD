@@ -1,5 +1,5 @@
 import Count from './Composants/Count.jsx';
-import Form from './Composants/Form.tsx';
+import Form from './Composants/Form.jsx';
 import './App.css';
 
 function App() {
