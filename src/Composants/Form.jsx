@@ -72,23 +72,23 @@ export default function Form() {
         const nextErrors = {};
 
         if (!isStringValide(data.name)) {
-            nextErrors.name = 'Le nom doit contenir uniquement des lettres.';
+            nextErrors.name = 'Le nom est invalide.';
         }
 
         if (!isStringValide(data.firstName)) {
-            nextErrors.firstName = 'Le prénom doit contenir uniquement des lettres.';
+            nextErrors.firstName = 'Le prénom est invalide.';
         }
 
         if (!isStringValide(data.city)) {
-            nextErrors.city = 'La ville doit contenir uniquement des lettres.';
+            nextErrors.city = 'La ville est invalide.';
         }
 
         if (!isEmailValid(data.email)) {
-            nextErrors.email = "L'email n'est pas valide.";
+            nextErrors.email = "L'email est invalide.";
         }
 
         if (!isCPValid(data.postalCode)) {
-            nextErrors.postalCode = "Le code postal n'est pas valide.";
+            nextErrors.postalCode = "Le code postal est invalide.";
         }
 
         if (!data.birthDate) {

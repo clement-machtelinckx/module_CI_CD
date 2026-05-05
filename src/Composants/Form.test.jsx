@@ -2,12 +2,12 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import Form from './Form.jsx';
 
 const fillRequiredFields = () => {
-    fireEvent.change(screen.getByLabelText(/^nom/i), { target: { value: 'Dupont' } });
-    fireEvent.change(screen.getByLabelText(/^prénom/i), { target: { value: 'Élodie' } });
+    fireEvent.change(screen.getByLabelText(/^nom/i), { target: { value: 'Machtelinckx' } });
+    fireEvent.change(screen.getByLabelText(/^prénom/i), { target: { value: 'Clem' } });
     fireEvent.change(screen.getByLabelText(/^date de naissance/i), { target: { value: '1990-05-05' } });
-    fireEvent.change(screen.getByLabelText(/^mail/i), { target: { value: 'elodie.dupont@example.com' } });
-    fireEvent.change(screen.getByLabelText(/^ville/i), { target: { value: 'Saint-Étienne' } });
-    fireEvent.change(screen.getByLabelText(/^code postal/i), { target: { value: '42000' } });
+    fireEvent.change(screen.getByLabelText(/^mail/i), { target: { value: 'clem@email.com' } });
+    fireEvent.change(screen.getByLabelText(/^ville/i), { target: { value: 'Cannes' } });
+    fireEvent.change(screen.getByLabelText(/^code postal/i), { target: { value: '06400' } });
 };
 
 describe('Form', () => {
@@ -24,18 +24,18 @@ describe('Form', () => {
     it('loads the registered users from localStorage', () => {
         localStorage.setItem('registeredUsers', JSON.stringify([
             {
-                name: 'Martin',
-                firstName: 'Julie',
+                name: 'Machtelinckx',
+                firstName: 'Clem',
                 birthDate: '1995-04-10',
-                email: 'julie.martin@example.com',
-                city: 'Lyon',
-                postalCode: '69001',
+                email: 'clem@email.com',
+                city: 'Cannes',
+                postalCode: '06400',
             },
         ]));
 
         render(<Form />);
 
-        expect(screen.getByText(/Julie Martin - julie\.martin@example\.com - Lyon - 69001/i)).toBeInTheDocument();
+        expect(screen.getByText(/Clem Machtelinckx - clem@email\.com - Cannes - 06400/i)).toBeInTheDocument();
     });
 
     it('ignores invalid data in localStorage', () => {
@@ -44,6 +44,7 @@ describe('Form', () => {
         expect(screen.getByText(/aucun inscrit pour le moment/i)).toBeInTheDocument();
 
         unmount();
+
         localStorage.setItem('registeredUsers', JSON.stringify({ name: 'bad format' }));
         render(<Form />);
         expect(screen.getByText(/aucun inscrit pour le moment/i)).toBeInTheDocument();
@@ -64,11 +65,11 @@ describe('Form', () => {
     it('shows a required error when the birth date is missing on submit', () => {
         const { container } = render(<Form />);
 
-        fireEvent.change(screen.getByLabelText(/^nom/i), { target: { value: 'Dupont' } });
-        fireEvent.change(screen.getByLabelText(/^prénom/i), { target: { value: 'Élodie' } });
-        fireEvent.change(screen.getByLabelText(/^mail/i), { target: { value: 'elodie.dupont@example.com' } });
-        fireEvent.change(screen.getByLabelText(/^ville/i), { target: { value: 'Paris' } });
-        fireEvent.change(screen.getByLabelText(/^code postal/i), { target: { value: '75001' } });
+        fireEvent.change(screen.getByLabelText(/^nom/i), { target: { value: 'Machtelinckx' } });
+        fireEvent.change(screen.getByLabelText(/^prénom/i), { target: { value: 'Clément' } });
+        fireEvent.change(screen.getByLabelText(/^mail/i), { target: { value: 'clem@email.com' } });
+        fireEvent.change(screen.getByLabelText(/^ville/i), { target: { value: 'Cannes' } });
+        fireEvent.change(screen.getByLabelText(/^code postal/i), { target: { value: '06400' } });
 
         fireEvent.submit(container.querySelector('form'));
 
@@ -89,12 +90,12 @@ describe('Form', () => {
 
         const alerts = screen.getAllByRole('alert');
 
-        expect(screen.getByText(/le nom doit contenir uniquement des lettres/i)).toHaveStyle({ color: 'red' });
-        expect(screen.getByText(/le prénom doit contenir uniquement des lettres/i)).toHaveStyle({ color: 'red' });
+        expect(screen.getByText(/le nom est invalide/i)).toHaveStyle({ color: 'red' });
+        expect(screen.getByText(/le prénom est invalide/i)).toHaveStyle({ color: 'red' });
         expect(screen.getByText(/vous devez être majeur/i)).toHaveStyle({ color: 'red' });
-        expect(screen.getByText(/l'email n'est pas valide/i)).toHaveStyle({ color: 'red' });
-        expect(screen.getByText(/la ville doit contenir uniquement des lettres/i)).toHaveStyle({ color: 'red' });
-        expect(screen.getByText(/le code postal n'est pas valide/i)).toHaveStyle({ color: 'red' });
+        expect(screen.getByText(/l'email est invalide/i)).toHaveStyle({ color: 'red' });
+        expect(screen.getByText(/la ville est invalide/i)).toHaveStyle({ color: 'red' });
+        expect(screen.getByText(/le code postal est invalide/i)).toHaveStyle({ color: 'red' });
         expect(alerts).toHaveLength(6);
     });
 
@@ -112,7 +113,7 @@ describe('Form', () => {
         expect(screen.getByLabelText(/^ville/i)).toHaveValue('');
         expect(screen.getByLabelText(/^code postal/i)).toHaveValue('');
         expect(screen.getByDisplayValue(/sauvegarder/i)).toBeDisabled();
-        expect(screen.getByText(/Élodie Dupont - elodie\.dupont@example\.com - Saint-Étienne - 42000/i)).toBeInTheDocument();
-        expect(localStorage.getItem('registeredUsers')).toContain('elodie.dupont@example.com');
+        expect(screen.getByText(/Clem Machtelinckx - clem@email\.com - Cannes - 06400/i)).toBeInTheDocument();
+        expect(localStorage.getItem('registeredUsers')).toContain('clem@email.com');
     });
 });
