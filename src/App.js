@@ -10,10 +10,19 @@ function App() {
   return (
     <div className="App">
       <div className="count">
-        
-      <Count />
-      <h1>test deployment 2 </h1>
-      <Form />
+        <Count />
+
+        <h1>test deployment 2</h1>
+
+        <a
+          href={`${process.env.PUBLIC_URL}/docs/`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Voir la documentation
+        </a>
+
+        <Form />
       </div>
     </div>
   );
