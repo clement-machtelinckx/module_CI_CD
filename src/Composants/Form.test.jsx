@@ -35,7 +35,11 @@ describe('Form', () => {
 
         render(<Form />);
 
-        expect(screen.getByText(/Clem Machtelinckx - clem@email\.com - Cannes - 06400/i)).toBeInTheDocument();
+        expect(screen.getByText('Clem')).toBeInTheDocument();
+        expect(screen.getByText('Machtelinckx')).toBeInTheDocument();
+        expect(screen.getByText('clem@email.com')).toBeInTheDocument();
+        expect(screen.getByText('Cannes')).toBeInTheDocument();
+        expect(screen.getByText('06400')).toBeInTheDocument();
     });
 
     it('ignores invalid data in localStorage', () => {
@@ -113,7 +117,11 @@ describe('Form', () => {
         expect(screen.getByLabelText(/^ville/i)).toHaveValue('');
         expect(screen.getByLabelText(/^code postal/i)).toHaveValue('');
         expect(screen.getByDisplayValue(/sauvegarder/i)).toBeDisabled();
-        expect(screen.getByText(/Clem Machtelinckx - clem@email\.com - Cannes - 06400/i)).toBeInTheDocument();
+        expect(screen.getByText('Clem')).toBeInTheDocument();
+        expect(screen.getByText('Machtelinckx')).toBeInTheDocument();
+        expect(screen.getByText('clem@email.com')).toBeInTheDocument();
+        expect(screen.getByText('Cannes')).toBeInTheDocument();
+        expect(screen.getByText('06400')).toBeInTheDocument();
         expect(localStorage.getItem('registeredUsers')).toContain('clem@email.com');
     });
 });

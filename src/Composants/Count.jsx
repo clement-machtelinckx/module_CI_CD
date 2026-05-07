@@ -9,7 +9,7 @@ export default function Count() {
 
   return (
     <>
-      <button onClick={handleClick}>Click me</button>
+      <button className='button' onClick={handleClick}>Click me</button>
       <span data-testid="count">{count}</span>
     </>
   );

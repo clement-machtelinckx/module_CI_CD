@@ -118,60 +118,85 @@ export default function Form() {
 
     return (
         <>
-            <h1 className="card">Formulaire</h1>
-            <form className="form" onSubmit={handleSubmit} noValidate>
+        <div className="form">
+            <h1>Formulaire</h1>
+
+            <form className='iner-form' onSubmit={handleSubmit} noValidate>
+                <div className="box-col">
                 <label>
                     Nom :
-                    <input type="text" name="name" value={formValues.name} onChange={handleChange} />
+                    <input className="form-input-text" type="text" name="name" value={formValues.name} onChange={handleChange} />
                 </label>
                 {errors.name && <p role="alert" style={errorStyle}>{errors.name}</p>}
 
                 <label>
                     Prénom :
-                    <input type="text" name="firstName" value={formValues.firstName} onChange={handleChange} />
+                    <input className="form-input-text" type="text" name="firstName" value={formValues.firstName} onChange={handleChange} />
                 </label>
                 {errors.firstName && <p role="alert" style={errorStyle}>{errors.firstName}</p>}
 
                 <label>
                     Date de naissance :
-                    <input type="date" name="birthDate" value={formValues.birthDate} onChange={handleChange} />
+                    <input className="form-input-text" type="date" name="birthDate" value={formValues.birthDate} onChange={handleChange} />
                 </label>
                 {errors.birthDate && <p role="alert" style={errorStyle}>{errors.birthDate}</p>}
-
+            </div>
+            <div className="box-col" >
                 <label>
                     Mail :
-                    <input type="email" name="email" value={formValues.email} onChange={handleChange} />
+                    <input className="form-input-text" type="email" name="email" value={formValues.email} onChange={handleChange} />
                 </label>
                 {errors.email && <p role="alert" style={errorStyle}>{errors.email}</p>}
 
                 <label>
                     Ville :
-                    <input type="text" name="city" value={formValues.city} onChange={handleChange} />
+                    <input  className="form-input-text" type="text" name="city" value={formValues.city} onChange={handleChange} />
                 </label>
                 {errors.city && <p role="alert" style={errorStyle}>{errors.city}</p>}
 
                 <label>
                     Code postal :
-                    <input type="text" name="postalCode" value={formValues.postalCode} onChange={handleChange} />
+                    <input className="form-input-text" type="text" name="postalCode" value={formValues.postalCode} onChange={handleChange} />
                 </label>
                 {errors.postalCode && <p role="alert" style={errorStyle}>{errors.postalCode}</p>}
 
-                <input type="submit" value="Sauvegarder" disabled={isSubmitDisabled} />
+                <input className="button" type="submit" value="Sauvegarder" disabled={isSubmitDisabled} />
                 {successMessage && <p role="status" style={successStyle}>{successMessage}</p>}
+                </div>
             </form>
 
             <h2>Liste des inscrits</h2>
+
             {registeredUsers.length === 0 ? (
                 <p>Aucun inscrit pour le moment.</p>
             ) : (
-                <ul>
-                    {registeredUsers.map((user, index) => (
-                        <li key={`${user.email}-${index}`}>
-                            {user.firstName} {user.name} - {user.email} - {user.city} - {user.postalCode}
-                        </li>
-                    ))}
-                </ul>
+                <table className='table'>
+                    <thead>
+                        <tr>
+                            <th scope="col">Nom</th>
+                            <th scope="col">Prénom</th>
+                            <th scope="col">Email</th>
+                            <th scope="col">Ville</th>
+                            <th scope="col">Code postal</th>
+                            <th scope="col">Date de naissance</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {registeredUsers.map((user, index) => (
+                            <tr key={`${user.email}-${index}`}>
+                                <td>{user.name}</td>
+                                <td>{user.firstName}</td>
+                                <td>{user.email}</td>
+                                <td>{user.city}</td>
+                                <td>{user.postalCode}</td>
+                                <td>{user.birthDate}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             )}
+            </div>
         </>
     );
 }
