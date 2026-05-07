@@ -6,6 +6,10 @@ import {
     isStringValide,
 } from '../utils/module.js';
 
+/**
+ * Valeurs initiales du formulaire d'inscription.
+ * @type {{name: string, firstName: string, birthDate: string, email: string, city: string, postalCode: string}}
+ */
 const initialFormValues = {
     name: '',
     firstName: '',
@@ -19,6 +23,10 @@ const errorStyle = { color: 'red' };
 const successStyle = { color: 'green' };
 const storageKey = 'registeredUsers';
 
+/**
+ * Charge la liste des inscrits depuis le localStorage.
+ * @returns {Array<Object>} Liste des inscrits ou tableau vide si aucune donnee exploitable n'est presente.
+ */
 function getRegisteredUsersFromStorage() {
     const savedUsers = localStorage.getItem(storageKey);
 
@@ -39,6 +47,11 @@ function getRegisteredUsersFromStorage() {
     }
 }
 
+/**
+ * Affiche le formulaire d'inscription, les messages de validation
+ * et la liste des inscrits sauvegardes dans le localStorage.
+ * @returns {JSX.Element} Composant formulaire.
+ */
 export default function Form() {
     const [formValues, setFormValues] = useState(initialFormValues);
     const [registeredUsers, setRegisteredUsers] = useState(getRegisteredUsersFromStorage);
@@ -47,6 +60,11 @@ export default function Form() {
 
     const isSubmitDisabled = Object.values(formValues).some((value) => value.trim() === '');
 
+    /**
+     * Met a jour le champ modifie dans l'etat local du formulaire.
+     * @param {React.ChangeEvent<HTMLInputElement>} event Evenement de changement.
+     * @returns {void}
+     */
     const handleChange = (event) => {
         const { name, value } = event.target;
 
@@ -56,6 +74,12 @@ export default function Form() {
         }));
     };
 
+    /**
+     * Valide le formulaire, enregistre l'utilisateur
+     * puis met a jour la liste des inscrits si tout est correct.
+     * @param {React.FormEvent<HTMLFormElement>} event Evenement de soumission du formulaire.
+     * @returns {void}
+     */
     const handleSubmit = (event) => {
         event.preventDefault();
 

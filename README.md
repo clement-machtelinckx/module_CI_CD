@@ -1,104 +1,151 @@
-# TP formulaire d'inscription React
+# Formulaire d'inscription React
 
-## énoncer
-Mise en Pratique :
+Application React Create React App permettant de saisir un formulaire d'inscription, de valider les donnees cote client et d'afficher la liste des inscrits en local.
 
-En react, faites un petit projet permettant à un utilisateur de s’enregistrer sur un formulaire avec nom, prénom, mail, date de naissance, ville, code postal et un bouton de sauvegarde, et de voir la liste des inscrits.
+## Fonctionnalites principales
 
+- Saisie des champs `nom`, `prenom`, `date de naissance`, `email`, `ville` et `code postal`
+- Validation metier centralisee dans `src/utils/module.js`
+- Affichage des erreurs de validation sous les champs
+- Blocage de la soumission tant que le formulaire est incomplet
+- Enregistrement des inscrits dans le `localStorage`
+- Affichage de la liste des inscrits
+- Tests unitaires et d'integration
+- Documentation JSDoc generee dans `public/docs`
 
-Le bouton est non clickable tant que les champs précédents ne sont pas remplis.
+## Stack technique
 
-Sous chaque champ on affiche un message d’erreur si celui-ci n’est pas valide.
+- React 19
+- Create React App
+- JavaScript / JSX
+- Jest
+- React Testing Library
+- JSDoc
+- GitHub Actions
+- GitHub Pages
 
-Si les champs sont valides, on affiche un toaster de succès, puis on vide les champs.
+## Pre-requis
 
+- Node.js 18+ recommande
+- npm
 
-Les règles de validation : 
+## Installation
 
-La date de naissance bloque les -18 ans, 
+```bash
+npm install
+```
 
-Le code postal doit être au format français (5 chiffres), 
-
-Les champs nom, prénom et ville doivent être valides (sans caractère spéciaux et chiffres mais accepter les accents, tréma, tiret, etc), 
-
-L’email doit être valide
-
-
-Les fonctions de vérification sont dans un fichier js à part qui sera totalement testé. Les composants React également. La couverture attendue est de 100% (index.js et reportWebVitals exclus) avec tous les tests unitaires et d’intégrations passant avec succès. Une documentation complète à fournir. La fiabilité des tests sera prise en compte.
-
-
-Les tests à avoir au minimum : 
-
-Le calcul de l'âge
-
-L'âge > 18 ans
-
-Le format du code postal
-
-Le format du nom, prénom et ville (avec différents cas particulier)
-
-Le format de l’email
-
-La désactivation du bouton si les champs ne sont pas remplis
-
-Le toaster de succès, avec champs vidés
-
-Les erreurs correspondantes en rouge
-
-
-L'utilisateur peut saisir :
-
-- son nom
-- son prenom
-- son mail
-- sa date de naissance
-- sa ville
-- son code postal
-
-Si le formulaire est valide :
-
-- le bouton sauvegarde enregistre l'utilisateur
-- un message de succes s'affiche
-- les champs sont vides
-- l'utilisateur est ajoute dans la liste des inscrits
-- la liste est sauvegardee dans le `localStorage`
-
-## Lancer le projet
+## Lancement en local
 
 ```bash
 npm start
 ```
 
-## Lancer les tests
+L'application est alors accessible sur `http://localhost:3000`.
+
+## Lancement des tests
 
 ```bash
-npm test 
+npm test
+```
 
+## Lancement de la couverture de tests
+
+```bash
 npm run test:coverage
 ```
 
-
-## Couverture
-
-exclus de la couverture sont :
+La configuration de couverture exclut :
 
 - `src/index.js`
 - `src/reportWebVitals.js`
 - `src/setupTests.js`
-- les fichiers `*.test.*`
+- les fichiers `*.test.js` et `*.test.jsx`
 
-## Tests presents
+## Generation de la documentation JSDoc
 
-Les tests verifient :
+```bash
+npm run jsdoc
+```
+
+La documentation est generee dans `public/docs`.
+
+## Build de production
+
+```bash
+npm run build
+```
+
+## Deploiement GitHub Pages
+
+```bash
+npm run deploy
+```
+
+Le script `predeploy` lance automatiquement le build avant publication.
+
+## CI/CD GitHub Actions
+
+Le workflow principal est :
+
+- [build_test_deploy_react.yml](./.github/workflows/build_test_deploy_react.yml)
+
+Il execute :
+
+- l'installation des dependances
+- la generation JSDoc
+- le build de production
+- les tests
+- l'upload de la couverture vers Codecov
+- le deploiement GitHub Pages
+
+## Structure rapide du projet
+
+```text
+src/
+  App.js
+  Composants/
+    Count.jsx
+    Form.jsx
+  utils/
+    module.js
+public/
+  docs/
+.github/
+  workflows/
+    build_test_deploy_react.yml
+jsdoc.config.json
+package.json
+```
+
+## Fichiers importants
+
+- `src/Composants/Form.jsx` : composant principal du formulaire et de la liste des inscrits
+- `src/Composants/Count.jsx` : composant compteur simple
+- `src/utils/module.js` : fonctions utilitaires de validation
+- `src/Composants/Form.test.jsx` : tests d'integration du formulaire
+- `src/utils/module.test.js` : tests unitaires des fonctions de validation
+- `jsdoc.config.json` : configuration JSDoc
+
+## Tests en place
+
+Les tests couvrent notamment :
 
 - le calcul de l'age
-- la majorite a partir de 18 ans
+- la verification de majorite
 - le format du code postal
-- le format du nom, du prenom et de la ville avec plusieurs cas
+- le format du nom, du prenom et de la ville
 - le format de l'email
-- le bouton desactive si les champs ne sont pas remplis
+- l'etat du bouton de soumission
+- l'affichage des messages d'erreur
 - le message de succes
-- le vidage des champs apres validation
-- l'affichage des erreurs en rouge
-- l'ajout dans la liste des inscrits
-- le chargement depuis le `localStorage`
+- le vidage du formulaire
+- l'ajout et le chargement des inscrits
+
+## URL de l'application deployee
+
+- https://clement-machtelinckx.github.io/module_CI_CD/
+
+## URL de la documentation generee
+
+- https://clement-machtelinckx.github.io/module_CI_CD/docs/index.html

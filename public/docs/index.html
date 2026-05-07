@@ -43,75 +43,126 @@
 
 
     <section>
-        <article><h1>TP formulaire d'inscription React</h1>
-<h2>énoncer</h2>
-<p>Mise en Pratique :</p>
-<p>En react, faites un petit projet permettant à un utilisateur de s’enregistrer sur un formulaire avec nom, prénom, mail, date de naissance, ville, code postal et un bouton de sauvegarde, et de voir la liste des inscrits.</p>
-<p>Le bouton est non clickable tant que les champs précédents ne sont pas remplis.</p>
-<p>Sous chaque champ on affiche un message d’erreur si celui-ci n’est pas valide.</p>
-<p>Si les champs sont valides, on affiche un toaster de succès, puis on vide les champs.</p>
-<p>Les règles de validation :</p>
-<p>La date de naissance bloque les -18 ans,</p>
-<p>Le code postal doit être au format français (5 chiffres),</p>
-<p>Les champs nom, prénom et ville doivent être valides (sans caractère spéciaux et chiffres mais accepter les accents, tréma, tiret, etc),</p>
-<p>L’email doit être valide</p>
-<p>Les fonctions de vérification sont dans un fichier js à part qui sera totalement testé. Les composants React également. La couverture attendue est de 100% (index.js et reportWebVitals exclus) avec tous les tests unitaires et d’intégrations passant avec succès. Une documentation complète à fournir. La fiabilité des tests sera prise en compte.</p>
-<p>Les tests à avoir au minimum :</p>
-<p>Le calcul de l'âge</p>
-<p>L'âge &gt; 18 ans</p>
-<p>Le format du code postal</p>
-<p>Le format du nom, prénom et ville (avec différents cas particulier)</p>
-<p>Le format de l’email</p>
-<p>La désactivation du bouton si les champs ne sont pas remplis</p>
-<p>Le toaster de succès, avec champs vidés</p>
-<p>Les erreurs correspondantes en rouge</p>
-<p>L'utilisateur peut saisir :</p>
+        <article><h1>Formulaire d'inscription React</h1>
+<p>Application React Create React App permettant de saisir un formulaire d'inscription, de valider les donnees cote client et d'afficher la liste des inscrits en local.</p>
+<h2>Fonctionnalites principales</h2>
 <ul>
-<li>son nom</li>
-<li>son prenom</li>
-<li>son mail</li>
-<li>sa date de naissance</li>
-<li>sa ville</li>
-<li>son code postal</li>
+<li>Saisie des champs <code>nom</code>, <code>prenom</code>, <code>date de naissance</code>, <code>email</code>, <code>ville</code> et <code>code postal</code></li>
+<li>Validation metier centralisee dans <code>src/utils/module.js</code></li>
+<li>Affichage des erreurs de validation sous les champs</li>
+<li>Blocage de la soumission tant que le formulaire est incomplet</li>
+<li>Enregistrement des inscrits dans le <code>localStorage</code></li>
+<li>Affichage de la liste des inscrits</li>
+<li>Tests unitaires et d'integration</li>
+<li>Documentation JSDoc generee dans <code>public/docs</code></li>
 </ul>
-<p>Si le formulaire est valide :</p>
+<h2>Stack technique</h2>
 <ul>
-<li>le bouton sauvegarde enregistre l'utilisateur</li>
-<li>un message de succes s'affiche</li>
-<li>les champs sont vides</li>
-<li>l'utilisateur est ajoute dans la liste des inscrits</li>
-<li>la liste est sauvegardee dans le <code>localStorage</code></li>
+<li>React 19</li>
+<li>Create React App</li>
+<li>JavaScript / JSX</li>
+<li>Jest</li>
+<li>React Testing Library</li>
+<li>JSDoc</li>
+<li>GitHub Actions</li>
+<li>GitHub Pages</li>
 </ul>
-<h2>Lancer le projet</h2>
+<h2>Pre-requis</h2>
+<ul>
+<li>Node.js 18+ recommande</li>
+<li>npm</li>
+</ul>
+<h2>Installation</h2>
+<pre class="prettyprint source lang-bash"><code>npm install
+</code></pre>
+<h2>Lancement en local</h2>
 <pre class="prettyprint source lang-bash"><code>npm start
 </code></pre>
-<h2>Lancer les tests</h2>
-<pre class="prettyprint source lang-bash"><code>npm test 
-
-npm run test:coverage
+<p>L'application est alors accessible sur <code>http://localhost:3000</code>.</p>
+<h2>Lancement des tests</h2>
+<pre class="prettyprint source lang-bash"><code>npm test
 </code></pre>
-<h2>Couverture</h2>
-<p>exclus de la couverture sont :</p>
+<h2>Lancement de la couverture de tests</h2>
+<pre class="prettyprint source lang-bash"><code>npm run test:coverage
+</code></pre>
+<p>La configuration de couverture exclut :</p>
 <ul>
 <li><code>src/index.js</code></li>
 <li><code>src/reportWebVitals.js</code></li>
 <li><code>src/setupTests.js</code></li>
-<li>les fichiers <code>*.test.*</code></li>
+<li>les fichiers <code>*.test.js</code> et <code>*.test.jsx</code></li>
 </ul>
-<h2>Tests presents</h2>
-<p>Les tests verifient :</p>
+<h2>Generation de la documentation JSDoc</h2>
+<pre class="prettyprint source lang-bash"><code>npm run jsdoc
+</code></pre>
+<p>La documentation est generee dans <code>public/docs</code>.</p>
+<h2>Build de production</h2>
+<pre class="prettyprint source lang-bash"><code>npm run build
+</code></pre>
+<h2>Deploiement GitHub Pages</h2>
+<pre class="prettyprint source lang-bash"><code>npm run deploy
+</code></pre>
+<p>Le script <code>predeploy</code> lance automatiquement le build avant publication.</p>
+<h2>CI/CD GitHub Actions</h2>
+<p>Le workflow principal est :</p>
+<ul>
+<li><a href="./.github/workflows/build_test_deploy_react.yml">build_test_deploy_react.yml</a></li>
+</ul>
+<p>Il execute :</p>
+<ul>
+<li>l'installation des dependances</li>
+<li>la generation JSDoc</li>
+<li>le build de production</li>
+<li>les tests</li>
+<li>l'upload de la couverture vers Codecov</li>
+<li>le deploiement GitHub Pages</li>
+</ul>
+<h2>Structure rapide du projet</h2>
+<pre class="prettyprint source lang-text"><code>src/
+  App.js
+  Composants/
+    Count.jsx
+    Form.jsx
+  utils/
+    module.js
+public/
+  docs/
+.github/
+  workflows/
+    build_test_deploy_react.yml
+jsdoc.config.json
+package.json
+</code></pre>
+<h2>Fichiers importants</h2>
+<ul>
+<li><code>src/Composants/Form.jsx</code> : composant principal du formulaire et de la liste des inscrits</li>
+<li><code>src/Composants/Count.jsx</code> : composant compteur simple</li>
+<li><code>src/utils/module.js</code> : fonctions utilitaires de validation</li>
+<li><code>src/Composants/Form.test.jsx</code> : tests d'integration du formulaire</li>
+<li><code>src/utils/module.test.js</code> : tests unitaires des fonctions de validation</li>
+<li><code>jsdoc.config.json</code> : configuration JSDoc</li>
+</ul>
+<h2>Tests en place</h2>
+<p>Les tests couvrent notamment :</p>
 <ul>
 <li>le calcul de l'age</li>
-<li>la majorite a partir de 18 ans</li>
+<li>la verification de majorite</li>
 <li>le format du code postal</li>
-<li>le format du nom, du prenom et de la ville avec plusieurs cas</li>
+<li>le format du nom, du prenom et de la ville</li>
 <li>le format de l'email</li>
-<li>le bouton desactive si les champs ne sont pas remplis</li>
+<li>l'etat du bouton de soumission</li>
+<li>l'affichage des messages d'erreur</li>
 <li>le message de succes</li>
-<li>le vidage des champs apres validation</li>
-<li>l'affichage des erreurs en rouge</li>
-<li>l'ajout dans la liste des inscrits</li>
-<li>le chargement depuis le <code>localStorage</code></li>
+<li>le vidage du formulaire</li>
+<li>l'ajout et le chargement des inscrits</li>
+</ul>
+<h2>URL de l'application deployee</h2>
+<ul>
+<li>https://clement-machtelinckx.github.io/module_CI_CD/</li>
+</ul>
+<h2>URL de la documentation generee</h2>
+<ul>
+<li>https://clement-machtelinckx.github.io/module_CI_CD/docs/index.html</li>
 </ul></article>
     </section>
 
@@ -123,13 +174,13 @@ npm run test:coverage
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#calculateAge">calculateAge</a></li><li><a href="global.html#isCPValid">isCPValid</a></li><li><a href="global.html#isEmailValid">isEmailValid</a></li><li><a href="global.html#isStringValide">isStringValide</a></li><li><a href="global.html#isUserMajeur">isUserMajeur</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#App">App</a></li><li><a href="global.html#calculateAge">calculateAge</a></li><li><a href="global.html#getRegisteredUsersFromStorage">getRegisteredUsersFromStorage</a></li><li><a href="global.html#initialFormValues">initialFormValues</a></li><li><a href="global.html#isCPValid">isCPValid</a></li><li><a href="global.html#isEmailValid">isEmailValid</a></li><li><a href="global.html#isStringValide">isStringValide</a></li><li><a href="global.html#isUserMajeur">isUserMajeur</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu May 07 2026 11:33:58 GMT+0200 (heure d’été d’Europe centrale)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Thu May 07 2026 11:46:10 GMT+0200 (heure d’été d’Europe centrale)
 </footer>
 
 <script> prettyPrint(); </script>
