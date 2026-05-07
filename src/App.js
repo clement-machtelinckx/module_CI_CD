@@ -6,8 +6,9 @@ function App() {
   return (
     <div className="App">
       <div className="count">
-        <h1>test deployment 2 </h1>
+        
       <Count />
+      <h1>test deployment 2 </h1>
       <Form />
       </div>
     </div>
