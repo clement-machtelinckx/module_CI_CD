@@ -95,10 +95,12 @@ package.json
 ```
 
 
+[git hub](https://github.com/clement-machtelinckx/module_CI_CD)
+
 
 ## URL de l'application deployee
 
-- [git hub](https://clement-machtelinckx.github.io/module_CI_CD/)
+- [app deployer](https://clement-machtelinckx.github.io/module_CI_CD/)
 
 ## URL de la documentation generee
 
