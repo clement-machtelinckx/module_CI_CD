@@ -2,6 +2,10 @@ import Count from './Composants/Count.jsx';
 import Form from './Composants/Form.jsx';
 import './App.css';
 
+/**
+ * Assemble les composants principaux de l'application.
+ * @returns {JSX.Element} Application React.
+ */
 function App() {
   return (
     <div className="App">
