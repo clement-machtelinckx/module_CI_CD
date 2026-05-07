@@ -18,8 +18,9 @@
     "build": "react-scripts build",
     "test": "react-scripts test --coverage --watchAll=false",
     "test:coverage": "react-scripts test --coverage --watchAll",
-    "predeploy" : "npm run build",
-    "deploy" : "gh-pages -d build"
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "jsdoc": "jsdoc -R ./README.md -c ./jsdoc.config.json -r -d ./public/docs"
   },
   "jest": {
     "collectCoverageFrom": [
@@ -50,6 +51,7 @@
   },
   "devDependencies": {
     "gh-pages": "^6.3.0",
+    "jsdoc": "^4.0.5",
     "react-test-renderer": "^19.2.5"
   }
 }
