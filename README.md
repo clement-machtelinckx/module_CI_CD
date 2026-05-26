@@ -71,6 +71,52 @@ npm run build
 npm run deploy
 ```
 
+## CI/CD
+
+### Tests, build et documentation
+
+Le workflow GitHub Actions se lance sur les evenements `push` et `pull_request` vers la branche `master`.
+
+Le job `build_test` execute les commandes suivantes :
+
+- `npm ci`
+- `npm run jsdoc`
+- `npm run build --if-present`
+- `npm test`
+
+Ce job gere egalement l'envoi de la couverture de tests vers Codecov.
+
+### Deploiement GitHub Pages
+
+Une fois le job `build_test` termine avec succes, le dossier `build` est upload comme artifact GitHub Pages.
+
+Le job `deploy` depend du succes de `build_test` et publie ensuite cet artifact sur GitHub Pages.
+
+### Publication npm
+
+Le job `publish_npm` se lance uniquement lors d'un `push`.
+
+Avant toute publication, le workflow lit le `name` et la `version` presents dans `package.json`, puis verifie avec `npm view` si cette combinaison existe deja sur npm.
+
+Si cette version existe deja sur npm, la publication est ignoree.
+
+Si la version est nouvelle, le workflow execute :
+
+- `npm ci`
+- `npm run build-npm`
+- `npm publish --access public`
+
+### Publier une nouvelle version
+
+Pour publier une nouvelle version, il faut d'abord modifier la version dans `package.json`, soit manuellement, soit en local avec une commande comme :
+
+- `npm version patch`
+- `npm version minor`
+- `npm version major`
+
+Apres le changement de version, il faut commit puis push.
+
+Au moment du `push`, GitHub Actions verifiera si cette version existe deja sur npm et ne publiera le package que si elle n'existe pas encore.
 
 
 
