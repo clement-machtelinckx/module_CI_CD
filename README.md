@@ -153,9 +153,3 @@ package.json
 - [docs](https://clement-machtelinckx.github.io/module_CI_CD/docs/index.html)
 
 test no new versionj 
-
-  ss
-  qdqdq
-  dq
-  dq
-  sdq
