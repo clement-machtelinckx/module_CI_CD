@@ -82,6 +82,23 @@ jobs:
           node-version: 22.x
           registry-url: https://registry.npmjs.org/
 
+      - name: Check if package version already exists on NPM
+        id: npm_check
+        run: |
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+
+          echo "Package: $PACKAGE_NAME"
+          echo "Version: $PACKAGE_VERSION"
+
+          if npm view "$PACKAGE_NAME@$PACKAGE_VERSION" version > /dev/null 2>&1; then
+            echo "Package version already exists on NPM. Skipping publish."
+            echo "should_publish=false" >> $GITHUB_OUTPUT
+          else
+            echo "Package version does not exist on NPM. Publishing."
+            echo "should_publish=true" >> $GITHUB_OUTPUT
+          fi
+
       - name: build and publish package on NPM
         run: |
           git config --global user.email "clement.machtelinckx@laplateforme.io"
