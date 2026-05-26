@@ -21,9 +21,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+          registry-url: 'https://registry.npmjs.org/'
       - name: npm ci, build and test
         run: |
           npm ci
@@ -69,10 +70,12 @@ jobs:
     if: github.event_name == 'push'
 
     permissions:
-      contents: read
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Use Node.js 22.x
         uses: actions/setup-node@v4
@@ -97,19 +100,15 @@ jobs:
             echo "should_publish=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Configure npm authentication
-        if: steps.npm_check.outputs.should_publish == 'true'
+      - name: build and publish package on NPM
         run: |
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
-          npm whoami
+          git config --global user.email "clement.machtelinckx@laplateforme.io"
+          git config --global user.name "Yazii"
+          npm ci
+          npm run build-npm
+          npm version patch
+          npm publish
+          git push
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
 
-      - name: Build and publish package on NPM
-        if: steps.npm_check.outputs.should_publish == 'true'
-        run: |
-          npm ci
-          npm run build-npm
-          npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
