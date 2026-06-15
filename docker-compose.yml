@@ -5,11 +5,29 @@ services:
     image: yazii/migration_mysql:latest
     container_name: migration_container
     restart: always
+    ports:
+      - "3306:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+    volumes:
+      - migration_mysql_data:/var/lib/mysql
+    networks:
+      - migration_network
 
   adminer:
     image: adminer
+    container_name: migration_adminer
     restart: always
     ports:
-      - 8080:8080
+      - "8080:8080"
+    networks:
+      - migration_network
+    depends_on:
+      - db
+
+volumes:
+  migration_mysql_data:
+
+networks:
+  migration_network:
+    driver: bridge
