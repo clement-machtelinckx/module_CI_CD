@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  db:
+    image: yazii/migration_mysql:latest
+    container_name: migration_container
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
