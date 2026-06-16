@@ -1,4 +1,4 @@
-name: Build, Test and Deploy React Application
+name: Build, Test Docker Stack and Deploy React Application
 
 on:
   push:
@@ -8,6 +8,15 @@ on:
   pull_request:
     branches:
       - master
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
 
 jobs:
   build_test:
@@ -19,85 +28,113 @@ jobs:
           - 22.x
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          registry-url: https://registry.npmjs.org/
 
-      - name: npm ci, test, generate doc and build
+      - name: Create CI env file
         run: |
-          npm ci
-          npm run jsdoc
-          npm run build --if-present
-          npm test
+          cat > .env <<EOF
+          MYSQL_ROOT_PASSWORD=ci_password
+          MYSQL_DATABASE=ynov_ci
+          MYSQL_USER=root
+          EOF
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Validate docker compose configuration
+        run: docker compose config
 
-      - name: Setup Pages
-        id: pages
+      - name: Build and start Docker Compose stack
+        run: docker compose up -d --build
+
+      - name: Wait for Docker services healthchecks
+        run: |
+          containers=(
+            migration_container
+            migration_adminer
+            migration_backend
+            migration_react
+          )
+
+          for container in "${containers[@]}"; do
+            echo "Waiting for $container to become healthy..."
+
+            for i in {1..60}; do
+              status=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$container")
+
+              echo "$container health status: $status"
+
+              if [ "$status" = "healthy" ]; then
+                echo "$container is healthy"
+                break
+              fi
+
+              if [ "$status" = "unhealthy" ]; then
+                echo "$container is unhealthy"
+                docker logs "$container"
+                exit 1
+              fi
+
+              if [ "$i" -eq 60 ]; then
+                echo "$container did not become healthy in time"
+                docker logs "$container"
+                exit 1
+              fi
+
+              sleep 5
+            done
+          done
+
+      - name: Smoke test Docker services
+        run: |
+          curl -f http://localhost:8000/users
+          curl -f http://localhost:8000/docs
+          curl -f http://localhost:3000
+          curl -f http://localhost:8080
+
+      - name: Install React dependencies
+        run: npm install
+
+      - name: Generate JSDoc documentation
+        run: npm run jsdoc
+
+      - name: Run React tests
+        run: npm test
+
+      - name: Build React application
+        run: npm run build --if-present
+
+      - name: Show Docker logs on failure
+        if: failure()
+        run: docker compose logs
+
+      - name: Stop Docker Compose stack
+        if: always()
+        run: docker compose down -v
+
+      - name: Setup GitHub Pages
+        if: github.event_name == 'push'
         uses: actions/configure-pages@v5
 
-      - name: Upload artifact
+      - name: Upload GitHub Pages artifact
+        if: github.event_name == 'push'
         uses: actions/upload-pages-artifact@v3
         with:
           path: build
           if-no-files-found: error
 
-  publish_npm:
-    runs-on: ubuntu-latest
-    needs: build_test
-    if: github.event_name == 'push'
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Use Node.js 22.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.x
-          registry-url: https://registry.npmjs.org/
-
-      - name: Build and publish package on NPM
-        run: |
-          npm ci
-          npm run build-npm
-
-          PACKAGE_NAME=$(node -p "require('./package.json').name")
-          LOCAL_VERSION=$(node -p "require('./package.json').version")
-          REMOTE_VERSION=$(npm view "$PACKAGE_NAME@$LOCAL_VERSION" version 2>/dev/null || echo "not-found")
-
-          echo "Package: $PACKAGE_NAME"
-          echo "Local version: $LOCAL_VERSION"
-          echo "Remote version: $REMOTE_VERSION"
-
-          if [ "$REMOTE_VERSION" = "$LOCAL_VERSION" ]; then
-            echo "Version already exists on NPM. Skipping publish."
-          else
-            echo "New version detected. Publishing package..."
-            npm whoami
-            npm publish --access public
-          fi
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_SECRET }}
-
   deploy:
+    if: github.event_name == 'push'
+    needs: build_test
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     runs-on: ubuntu-latest
-
-    permissions:
-      pages: write
-      id-token: write
-
-    needs: build_test
 
     steps:
       - name: Deploy to GitHub Pages
