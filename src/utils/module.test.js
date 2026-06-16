@@ -25,6 +25,10 @@ describe('module utils', () => {
             expect(calculateAge({ birth: new Date('2008-12-01T12:00:00Z') })).toBe(17);
         });
 
+        it('subtracts one year when the birthday is later in the current month', () => {
+            expect(calculateAge({ birth: new Date('1991-05-20T12:00:00Z') })).toBe(34);
+        });
+
         it('throws when the parameter is missing', () => {
             expect(() => calculateAge()).toThrow('missing param p');
         });

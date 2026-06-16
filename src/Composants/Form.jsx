@@ -1,4 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+    createUser,
+    deleteUser,
+    getUsers,
+    updateUser,
+} from '../services/userService.js';
 import {
     isCPValid,
     isUserMajeur,
@@ -21,44 +27,102 @@ const initialFormValues = {
 
 const errorStyle = { color: 'red' };
 const successStyle = { color: 'green' };
-const storageKey = 'registeredUsers';
+const noop = () => {};
 
-/**
- * Charge la liste des inscrits depuis le localStorage.
- * @returns {Array<Object>} Liste des inscrits ou tableau vide si aucune donnee exploitable n'est presente.
- */
-function getRegisteredUsersFromStorage() {
-    const savedUsers = localStorage.getItem(storageKey);
+function toFormValues(user) {
+    return {
+        name: user.name,
+        firstName: user.firstName,
+        birthDate: String(user.birthDate).slice(0, 10),
+        email: user.email,
+        city: user.city,
+        postalCode: user.postalCode,
+    };
+}
 
-    if (!savedUsers) {
-        return [];
+function validateUser(data) {
+    const nextErrors = {};
+
+    if (!isStringValide(data.name)) {
+        nextErrors.name = 'Le nom est invalide.';
     }
 
-    try {
-        const parsedUsers = JSON.parse(savedUsers);
+    if (!isStringValide(data.firstName)) {
+        nextErrors.firstName = 'Le prénom est invalide.';
+    }
 
-        if (Array.isArray(parsedUsers)) {
-            return parsedUsers;
+    if (!isStringValide(data.city)) {
+        nextErrors.city = 'La ville est invalide.';
+    }
+
+    if (!isEmailValid(data.email)) {
+        nextErrors.email = "L'email est invalide.";
+    }
+
+    if (!isCPValid(data.postalCode)) {
+        nextErrors.postalCode = "Le code postal est invalide.";
+    }
+
+    if (!data.birthDate) {
+        nextErrors.birthDate = 'La date de naissance est obligatoire.';
+    } else {
+        const user = { birth: new Date(data.birthDate) };
+
+        if (!isUserMajeur(user)) {
+            nextErrors.birthDate = 'Vous devez être majeur pour soumettre ce formulaire.';
         }
-
-        return [];
-    } catch (error) {
-        return [];
     }
+
+    return nextErrors;
 }
 
 /**
  * Affiche le formulaire d'inscription, les messages de validation
- * et la liste des inscrits sauvegardes dans le localStorage.
+ * et la liste des inscrits recuperes depuis l'API.
+ * @param {{ onUsersChange?: (count: number) => void }} props Props du composant.
  * @returns {JSX.Element} Composant formulaire.
  */
-export default function Form() {
+export default function Form({ onUsersChange = noop }) {
     const [formValues, setFormValues] = useState(initialFormValues);
-    const [registeredUsers, setRegisteredUsers] = useState(getRegisteredUsersFromStorage);
+    const [users, setUsers] = useState([]);
+    const [editingUserId, setEditingUserId] = useState(null);
     const [errors, setErrors] = useState({});
     const [successMessage, setSuccessMessage] = useState('');
+    const [apiError, setApiError] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
 
     const isSubmitDisabled = Object.values(formValues).some((value) => value.trim() === '');
+
+    useEffect(() => {
+        async function loadUsers() {
+            setIsLoading(true);
+
+            try {
+                const apiUsers = await getUsers();
+
+                setUsers(apiUsers);
+                onUsersChange(apiUsers.length);
+                setApiError('');
+            } catch (error) {
+                console.error(error);
+                setApiError("Impossible de récupérer les utilisateurs depuis l'API.");
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        loadUsers();
+    }, [onUsersChange]);
+
+    const syncUsers = (users) => {
+        setUsers(users);
+        onUsersChange(users.length);
+    };
+
+    const resetForm = () => {
+        setFormValues(initialFormValues);
+        setEditingUserId(null);
+    };
 
     /**
      * Met a jour le champ modifie dans l'etat local du formulaire.
@@ -75,15 +139,14 @@ export default function Form() {
     };
 
     /**
-     * Valide le formulaire, enregistre l'utilisateur
-     * puis met a jour la liste des inscrits si tout est correct.
+     * Valide le formulaire, enregistre l'utilisateur via l'API
+     * puis met a jour la liste locale si tout est correct.
      * @param {React.FormEvent<HTMLFormElement>} event Evenement de soumission du formulaire.
-     * @returns {void}
+     * @returns {Promise<void>}
      */
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const form = event.currentTarget;
         const data = {
             name: formValues.name.trim(),
             firstName: formValues.firstName.trim(),
@@ -92,37 +155,7 @@ export default function Form() {
             city: formValues.city.trim(),
             postalCode: formValues.postalCode.trim(),
         };
-
-        const nextErrors = {};
-
-        if (!isStringValide(data.name)) {
-            nextErrors.name = 'Le nom est invalide.';
-        }
-
-        if (!isStringValide(data.firstName)) {
-            nextErrors.firstName = 'Le prénom est invalide.';
-        }
-
-        if (!isStringValide(data.city)) {
-            nextErrors.city = 'La ville est invalide.';
-        }
-
-        if (!isEmailValid(data.email)) {
-            nextErrors.email = "L'email est invalide.";
-        }
-
-        if (!isCPValid(data.postalCode)) {
-            nextErrors.postalCode = "Le code postal est invalide.";
-        }
-
-        if (!data.birthDate) {
-            nextErrors.birthDate = 'La date de naissance est obligatoire.';
-        } else {
-            const user = { birth: new Date(data.birthDate) };
-            if (!isUserMajeur(user)) {
-                nextErrors.birthDate = 'Vous devez être majeur pour soumettre ce formulaire.';
-            }
-        }
+        const nextErrors = validateUser(data);
 
         if (Object.keys(nextErrors).length > 0) {
             setErrors(nextErrors);
@@ -130,14 +163,63 @@ export default function Form() {
             return;
         }
 
-        const updatedUsers = [...registeredUsers, data];
+        try {
+            if (editingUserId) {
+                const updatedUser = await updateUser(editingUserId, data);
+                const updatedUsers = users.map((user) => (
+                    user.id === editingUserId ? updatedUser : user
+                ));
 
-        localStorage.setItem(storageKey, JSON.stringify(updatedUsers));
-        setRegisteredUsers(updatedUsers);
+                syncUsers(updatedUsers);
+                setSuccessMessage('Utilisateur mis à jour avec succès !');
+            } else {
+                const createdUser = await createUser(data);
+                const updatedUsers = [...users, createdUser];
+
+                syncUsers(updatedUsers);
+                setSuccessMessage('Utilisateur enregistré avec succès !');
+            }
+
+            setErrors({});
+            setApiError('');
+            resetForm();
+        } catch (error) {
+            console.error(error);
+            setApiError("Impossible d'enregistrer l'utilisateur depuis l'API.");
+        }
+    };
+
+    const handleDelete = async (userId) => {
+        try {
+            await deleteUser(userId);
+
+            const updatedUsers = users.filter((user) => user.id !== userId);
+            syncUsers(updatedUsers);
+
+            if (editingUserId === userId) {
+                resetForm();
+            }
+
+            setApiError('');
+            setSuccessMessage('Utilisateur supprimé avec succès !');
+        } catch (error) {
+            console.error(error);
+            setApiError("Impossible de supprimer l'utilisateur depuis l'API.");
+        }
+    };
+
+    const handleEdit = (user) => {
+        setEditingUserId(user.id);
+        setFormValues(toFormValues(user));
         setErrors({});
-        setSuccessMessage('Utilisateur enregistré avec succès !');
-        setFormValues(initialFormValues);
-        form.reset();
+        setSuccessMessage('');
+        setApiError('');
+    };
+
+    const handleCancelEdit = () => {
+        resetForm();
+        setErrors({});
+        setSuccessMessage('');
     };
 
     return (
@@ -184,14 +266,18 @@ export default function Form() {
                 </label>
                 {errors.postalCode && <p role="alert" style={errorStyle}>{errors.postalCode}</p>}
 
-                <input className="button" type="submit" value="Sauvegarder" disabled={isSubmitDisabled} />
+                <input className="button" type="submit" value={editingUserId ? 'Mettre à jour' : 'Sauvegarder'} disabled={isSubmitDisabled} />
+                {editingUserId && <button className="button" type="button" onClick={handleCancelEdit}>Annuler</button>}
                 {successMessage && <p role="status" style={successStyle}>{successMessage}</p>}
+                {apiError && <p role="alert" style={errorStyle}>{apiError}</p>}
                 </div>
             </form>
 
             <h2>Liste des inscrits</h2>
 
-            {registeredUsers.length === 0 ? (
+            {isLoading ? (
+                <p>Chargement des utilisateurs...</p>
+            ) : users.length === 0 ? (
                 <p>Aucun inscrit pour le moment.</p>
             ) : (
                 <table className='table'>
@@ -203,18 +289,23 @@ export default function Form() {
                             <th scope="col">Ville</th>
                             <th scope="col">Code postal</th>
                             <th scope="col">Date de naissance</th>
+                            <th scope="col">Actions</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        {registeredUsers.map((user, index) => (
-                            <tr key={`${user.email}-${index}`}>
+                        {users.map((user) => (
+                            <tr key={user.id}>
                                 <td>{user.name}</td>
                                 <td>{user.firstName}</td>
                                 <td>{user.email}</td>
                                 <td>{user.city}</td>
                                 <td>{user.postalCode}</td>
-                                <td>{user.birthDate}</td>
+                                <td>{String(user.birthDate).slice(0, 10)}</td>
+                                <td>
+                                    <button className="button" type="button" onClick={() => handleEdit(user)}>Modifier</button>
+                                    <button className="button" type="button" onClick={() => handleDelete(user.id)}>Supprimer</button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
