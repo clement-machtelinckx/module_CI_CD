@@ -82,7 +82,8 @@ function validateUser(data) {
 /**
  * Affiche le formulaire d'inscription, les messages de validation
  * et la liste des inscrits recuperes depuis l'API.
- * @param {{ adminToken?: string, isAdmin?: boolean, onUsersChange?: (count: number) => void }} props Props du composant.
+ * @param {Object} [props={}] Props du composant.
+ * @param {Function} [props.onUsersChange] Callback appelé avec le nombre d'utilisateurs.
  * @returns {JSX.Element} Composant formulaire.
  */
 export default function Form({ adminToken = '', isAdmin = false, onUsersChange = noop }) {
