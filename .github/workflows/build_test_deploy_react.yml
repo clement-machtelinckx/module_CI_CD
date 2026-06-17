@@ -131,7 +131,7 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          install: false
+          install: true
           wait-on: 'http://localhost:3000'
           wait-on-timeout: 120
           config: baseUrl=http://localhost:3000
