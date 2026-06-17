@@ -128,11 +128,16 @@ jobs:
         if: failure()
         run: docker compose logs
 
+      - name: Install frontend dependencies
+        run: npm install
+
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          build: npm run build
-          start: npm start
+          install: false
+          wait-on: 'http://localhost:3000'
+          wait-on-timeout: 120
+          config: baseUrl=http://localhost:3000
 
       - name: Stop Docker Compose stack
         if: always()
