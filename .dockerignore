@@ -1,6 +1,12 @@
 node_modules
 build
+coverage
+dist
+cypress
 .git
+.github
+.idea
 .env
 backend/__pycache__
 *.pyc
+npm-debug.log*

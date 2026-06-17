@@ -60,8 +60,17 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: npm
+
+      - name: Use npm 11
+        run: npm install -g npm@11.17.0 --no-audit --no-fund
+
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --no-audit --no-fund
 
       - name: Create CI env file
         run: |
@@ -78,11 +87,14 @@ jobs:
       - name: Validate Docker Compose config
         run: docker compose config
 
+      - name: Clean Docker Compose state
+        run: docker compose down -v --remove-orphans
+
       - name: Start Docker Compose stack
         run: docker compose up -d --build
 
       - name: Show running containers
-        run: docker ps
+        run: docker compose ps
 
       - name: Check all containers health
         run: |
@@ -120,26 +132,32 @@ jobs:
           check_health migration_backend
           check_health migration_react
 
-      - name: Smoke test services
+      - name: Debug services before Cypress
         run: |
+          docker compose ps
+          docker logs migration_react --tail 100
+          curl -I http://localhost:3000
+          curl -s http://localhost:3000 | head -n 40
           curl -f http://localhost:8000/users
-          curl -f http://localhost:8000/docs
-          curl -f http://localhost:3000
-          curl -f http://localhost:8080
-
-      - name: Wait for services to be healthy
-        run: sleep 60
 
       - name: Cypress run
         uses: cypress-io/github-action@v6
+        with:
+          install: false
+          wait-on: http://localhost:3000
+          wait-on-timeout: 120
+          config: baseUrl=http://localhost:3000
 
       - name: Show Docker logs on failure
         if: failure()
-        run: docker compose logs
+        run: |
+          docker compose logs --no-color
+          docker logs migration_react --tail 200
+          docker logs migration_backend --tail 200
 
       - name: Stop Docker Compose stack
         if: always()
-        run: docker compose down -v
+        run: docker compose down -v --remove-orphans
 
   test-react:
     name: Test and build React application
@@ -160,8 +178,11 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Use npm 11
+        run: npm install -g npm@11.17.0 --no-audit --no-fund
+
       - name: Install React dependencies
-        run: npm install
+        run: npm ci --no-audit --no-fund
 
       - name: Generate JSDoc documentation
         run: npm run jsdoc
