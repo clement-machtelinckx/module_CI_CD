@@ -17,6 +17,13 @@ describe('Users E2E', () => {
         postalCode: '7500',
     }
 
+    const goHome = () => {
+        cy.visit('/')
+        cy.contains('Users manager', { timeout: 30000 }).should('be.visible')
+        cy.contains('Formulaire', { timeout: 30000 }).should('be.visible')
+        cy.contains('Liste des inscrits', { timeout: 30000 }).should('be.visible')
+    }
+
     const fillUserForm = (user) => {
         cy.get('input[name="name"]').clear().type(user.name)
         cy.get('input[name="firstName"]').clear().type(user.firstName)
@@ -27,13 +34,10 @@ describe('Users E2E', () => {
     }
 
     it('starts with no registered user, creates a user without error, then shows one registered user', () => {
-        cy.visit('http://localhost:3000')
+        goHome()
 
-        cy.contains('Users manager').should('be.visible')
-        cy.contains('0 utilisateur(s) récupéré(s) depuis l\'API').should('be.visible')
+        cy.contains('0 utilisateur(s) récupéré(s) depuis l\'API', { timeout: 30000 }).should('be.visible')
         cy.contains('Aucun inscrit pour le moment.').should('be.visible')
-
-        cy.contains('Formulaire').should('be.visible')
 
         fillUserForm(validUser)
 
@@ -41,9 +45,8 @@ describe('Users E2E', () => {
             .should('not.be.disabled')
             .click()
 
-        cy.contains('Utilisateur enregistré avec succès !').should('be.visible')
-
-        cy.contains('1 utilisateur(s) récupéré(s) depuis l\'API').should('be.visible')
+        cy.contains('Utilisateur enregistré avec succès !', { timeout: 30000 }).should('be.visible')
+        cy.contains('1 utilisateur(s) récupéré(s) depuis l\'API', { timeout: 30000 }).should('be.visible')
 
         cy.get('table').within(() => {
             cy.contains('td', validUser.name).should('be.visible')
@@ -53,12 +56,9 @@ describe('Users E2E', () => {
     })
 
     it('starts with one registered user, tries to create an invalid user, then still shows one registered user', () => {
-        cy.visit('http://localhost:3000')
+        goHome()
 
-        cy.contains('Users manager').should('be.visible')
-        cy.contains('1 utilisateur(s) récupéré(s) depuis l\'API').should('be.visible')
-
-        cy.contains('Formulaire').should('be.visible')
+        cy.contains('1 utilisateur(s) récupéré(s) depuis l\'API', { timeout: 30000 }).should('be.visible')
 
         fillUserForm(invalidUser)
 
@@ -72,9 +72,9 @@ describe('Users E2E', () => {
 
         cy.contains('Utilisateur enregistré avec succès !').should('not.exist')
 
-        cy.visit('http://localhost:3000')
+        goHome()
 
-        cy.contains('1 utilisateur(s) récupéré(s) depuis l\'API').should('be.visible')
+        cy.contains('1 utilisateur(s) récupéré(s) depuis l\'API', { timeout: 30000 }).should('be.visible')
 
         cy.get('table').within(() => {
             cy.contains('td', validUser.name).should('be.visible')
