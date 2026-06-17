@@ -2,10 +2,8 @@ import axios from 'axios';
 import {
     createApiClient,
     createUser,
-    deleteUser,
     getApiBaseUrl,
     getUsers,
-    updateUser,
 } from './userService.js';
 
 jest.mock('axios', () => ({
@@ -19,8 +17,6 @@ describe('userService', () => {
         apiClient = {
             get: jest.fn(),
             post: jest.fn(),
-            patch: jest.fn(),
-            delete: jest.fn(),
         };
 
         axios.create.mockReturnValue(apiClient);
@@ -60,18 +56,4 @@ describe('userService', () => {
         expect(apiClient.post).toHaveBeenCalledWith('/users', user);
     });
 
-    it('updates a user', async () => {
-        const partialUser = { city: 'Paris' };
-        apiClient.patch.mockResolvedValue({ data: { id: 1, ...partialUser } });
-
-        await expect(updateUser(1, partialUser)).resolves.toEqual({ id: 1, ...partialUser });
-        expect(apiClient.patch).toHaveBeenCalledWith('/users/1', partialUser);
-    });
-
-    it('deletes a user', async () => {
-        apiClient.delete.mockResolvedValue({ data: { deletedId: 1 } });
-
-        await expect(deleteUser(1)).resolves.toEqual({ deletedId: 1 });
-        expect(apiClient.delete).toHaveBeenCalledWith('/users/1');
-    });
 });

@@ -1,7 +1,25 @@
 import { useCallback, useState } from 'react';
+import AdminLogin, {
+  adminEmailStorageKey,
+  adminTokenStorageKey,
+} from './Composants/AdminLogin.jsx';
 import Count from './Composants/Count.jsx';
 import Form from './Composants/Form.jsx';
 import './App.css';
+
+function getStoredAdminSession() {
+  const token = localStorage.getItem(adminTokenStorageKey);
+  const email = localStorage.getItem(adminEmailStorageKey);
+
+  if (token && email) {
+    return {
+      token,
+      email,
+    };
+  }
+
+  return null;
+}
 
 /**
  * Assemble les composants principaux de l'application.
@@ -9,6 +27,7 @@ import './App.css';
  */
 function App() {
   const [usersCount, setUsersCount] = useState(0);
+  const [adminSession, setAdminSession] = useState(getStoredAdminSession);
 
   const handleUsersChange = useCallback((count) => {
     setUsersCount(count);
@@ -32,7 +51,17 @@ function App() {
           Voir la documentation
         </a>
 
-        <Form onUsersChange={handleUsersChange} />
+        <AdminLogin
+          adminSession={adminSession}
+          onLogin={setAdminSession}
+          onLogout={() => setAdminSession(null)}
+        />
+
+        <Form
+          adminToken={adminSession?.token || ''}
+          isAdmin={Boolean(adminSession?.token)}
+          onUsersChange={handleUsersChange}
+        />
       </div>
     </div>
   );

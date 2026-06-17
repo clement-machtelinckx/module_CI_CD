@@ -1,20 +1,42 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import Form from './Form.jsx';
 import {
+    deleteAdminUser,
+    getAdminUsers,
+    updateAdminUser,
+} from '../services/adminService.js';
+import {
     createUser,
-    deleteUser,
     getUsers,
-    updateUser,
 } from '../services/userService.js';
+
+jest.mock('../services/adminService.js', () => ({
+    deleteAdminUser: jest.fn(),
+    getAdminUsers: jest.fn(),
+    updateAdminUser: jest.fn(),
+}));
 
 jest.mock('../services/userService.js', () => ({
     createUser: jest.fn(),
-    deleteUser: jest.fn(),
     getUsers: jest.fn(),
-    updateUser: jest.fn(),
 }));
 
-const apiUsers = [
+const publicUsers = [
+    {
+        id: 1,
+        name: 'Machtelinckx',
+        firstName: 'Clem',
+        city: 'Cannes',
+    },
+    {
+        id: 2,
+        name: 'Dupont',
+        firstName: 'Jean',
+        city: 'Paris',
+    },
+];
+
+const adminUsers = [
     {
         id: 1,
         name: 'Machtelinckx',
@@ -59,9 +81,10 @@ describe('Form', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         getUsers.mockResolvedValue([]);
-        createUser.mockResolvedValue({ id: 3, ...validUserPayload });
-        updateUser.mockResolvedValue({ id: 1, ...validUserPayload });
-        deleteUser.mockResolvedValue({ deletedId: 1 });
+        getAdminUsers.mockResolvedValue([]);
+        createUser.mockResolvedValue({ id: 3, name: 'Martin', firstName: 'Claire', city: 'Lyon' });
+        updateAdminUser.mockResolvedValue({ id: 1, ...validUserPayload });
+        deleteAdminUser.mockResolvedValue({ deletedId: 1 });
         consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
     });
 
@@ -69,7 +92,7 @@ describe('Form', () => {
         consoleErrorSpy.mockRestore();
     });
 
-    it('shows a loading message while users are loading', async () => {
+    it('shows a loading message while public users are loading', async () => {
         let resolveUsers;
         getUsers.mockReturnValue(new Promise((resolve) => {
             resolveUsers = resolve;
@@ -84,18 +107,37 @@ describe('Form', () => {
         expect(await screen.findByText(/aucun inscrit pour le moment/i)).toBeInTheDocument();
     });
 
-    it('loads users from the API and notifies the users count', async () => {
+    it('loads a reduced public users list and hides private fields and delete buttons', async () => {
         const onUsersChange = jest.fn();
-        getUsers.mockResolvedValue(apiUsers);
+        getUsers.mockResolvedValue(publicUsers);
 
         render(<Form onUsersChange={onUsersChange} />);
 
         expect(await screen.findByText('Clem')).toBeInTheDocument();
         expect(screen.getByText('Machtelinckx')).toBeInTheDocument();
-        expect(screen.getByText('clem@email.com')).toBeInTheDocument();
         expect(screen.getByText('Cannes')).toBeInTheDocument();
-        expect(screen.getByText('06400')).toBeInTheDocument();
         expect(screen.getByText('Jean')).toBeInTheDocument();
+        expect(screen.queryByText('clem@email.com')).not.toBeInTheDocument();
+        expect(screen.queryByText('06400')).not.toBeInTheDocument();
+        expect(screen.queryByText('1990-05-05')).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /supprimer/i })).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', { name: /modifier/i })).not.toBeInTheDocument();
+        expect(onUsersChange).toHaveBeenCalledWith(2);
+    });
+
+    it('loads a full admin users list with private fields and action buttons', async () => {
+        const onUsersChange = jest.fn();
+        getAdminUsers.mockResolvedValue(adminUsers);
+
+        render(<Form adminToken="token-123" isAdmin onUsersChange={onUsersChange} />);
+
+        expect(await screen.findByText('Clem')).toBeInTheDocument();
+        expect(screen.getByText('clem@email.com')).toBeInTheDocument();
+        expect(screen.getByText('06400')).toBeInTheDocument();
+        expect(screen.getByText('1990-05-05')).toBeInTheDocument();
+        expect(screen.getAllByRole('button', { name: /supprimer/i })).toHaveLength(2);
+        expect(screen.getAllByRole('button', { name: /modifier/i })).toHaveLength(2);
+        expect(getAdminUsers).toHaveBeenCalledWith('token-123');
         expect(onUsersChange).toHaveBeenCalledWith(2);
     });
 
@@ -109,6 +151,15 @@ describe('Form', () => {
         getUsers.mockRejectedValue(new Error('API down'));
 
         render(<Form />);
+
+        expect(await screen.findByText(/impossible de récupérer les utilisateurs/i)).toHaveStyle({ color: 'red' });
+        expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
+    it('shows an API error when loading admin users fails', async () => {
+        getAdminUsers.mockRejectedValue(new Error('admin API down'));
+
+        render(<Form adminToken="token-123" isAdmin />);
 
         expect(await screen.findByText(/impossible de récupérer les utilisateurs/i)).toHaveStyle({ color: 'red' });
         expect(consoleErrorSpy).toHaveBeenCalled();
@@ -173,10 +224,10 @@ describe('Form', () => {
         expect(createUser).not.toHaveBeenCalled();
     });
 
-    it('creates a user through the API, clears fields and updates the list', async () => {
+    it('creates a public user, clears fields and refreshes the public list', async () => {
         const onUsersChange = jest.fn();
-        const createdUser = { id: 3, ...validUserPayload };
-        createUser.mockResolvedValue(createdUser);
+        const createdPublicUser = { id: 3, name: 'Martin', firstName: 'Claire', city: 'Lyon' };
+        getUsers.mockResolvedValueOnce([]).mockResolvedValueOnce([createdPublicUser]);
 
         render(<Form onUsersChange={onUsersChange} />);
 
@@ -197,8 +248,25 @@ describe('Form', () => {
         expect(screen.getByDisplayValue(/sauvegarder/i)).toBeDisabled();
         expect(screen.getByText('Claire')).toBeInTheDocument();
         expect(screen.getByText('Martin')).toBeInTheDocument();
-        expect(screen.getByText('claire@email.com')).toBeInTheDocument();
+        expect(screen.queryByText('claire@email.com')).not.toBeInTheDocument();
         expect(onUsersChange).toHaveBeenLastCalledWith(1);
+    });
+
+    it('creates a user while admin is connected and refreshes the admin list', async () => {
+        const createdAdminUser = { id: 3, ...validUserPayload };
+        getAdminUsers.mockResolvedValueOnce([]).mockResolvedValueOnce([createdAdminUser]);
+
+        render(<Form adminToken="token-123" isAdmin />);
+
+        await screen.findByText(/aucun inscrit pour le moment/i);
+
+        fillRequiredFields();
+        fireEvent.click(screen.getByDisplayValue(/sauvegarder/i));
+
+        await waitFor(() => expect(createUser).toHaveBeenCalledWith(validUserPayload));
+
+        expect(await screen.findByText('claire@email.com')).toBeInTheDocument();
+        expect(getAdminUsers).toHaveBeenLastCalledWith('token-123');
     });
 
     it('shows an API error when create fails', async () => {
@@ -215,17 +283,17 @@ describe('Form', () => {
         expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
-    it('deletes a user through the API and updates the list', async () => {
+    it('deletes a user through the admin API and updates the list', async () => {
         const onUsersChange = jest.fn();
-        getUsers.mockResolvedValue(apiUsers);
+        getAdminUsers.mockResolvedValue(adminUsers);
 
-        render(<Form onUsersChange={onUsersChange} />);
+        render(<Form adminToken="token-123" isAdmin onUsersChange={onUsersChange} />);
 
         const row = (await screen.findByText('Clem')).closest('tr');
 
         fireEvent.click(within(row).getByRole('button', { name: /supprimer/i }));
 
-        await waitFor(() => expect(deleteUser).toHaveBeenCalledWith(1));
+        await waitFor(() => expect(deleteAdminUser).toHaveBeenCalledWith(1, 'token-123'));
 
         expect(await screen.findByRole('status')).toHaveTextContent(/utilisateur supprimé avec succès/i);
         expect(screen.queryByText('Clem')).not.toBeInTheDocument();
@@ -233,11 +301,11 @@ describe('Form', () => {
         expect(onUsersChange).toHaveBeenLastCalledWith(1);
     });
 
-    it('shows an API error when delete fails', async () => {
-        getUsers.mockResolvedValue(apiUsers);
-        deleteUser.mockRejectedValue(new Error('delete failed'));
+    it('shows an API error when admin delete fails', async () => {
+        getAdminUsers.mockResolvedValue(adminUsers);
+        deleteAdminUser.mockRejectedValue(new Error('delete failed'));
 
-        render(<Form />);
+        render(<Form adminToken="token-123" isAdmin />);
 
         const row = (await screen.findByText('Clem')).closest('tr');
 
@@ -248,16 +316,16 @@ describe('Form', () => {
         expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
-    it('prefills the form, updates a user through PATCH and leaves edit mode', async () => {
+    it('prefills the form, updates a user through admin PATCH and leaves edit mode', async () => {
         const updatedUser = {
-            ...apiUsers[0],
+            ...adminUsers[0],
             city: 'Lyon',
             postalCode: '69002',
         };
-        getUsers.mockResolvedValue(apiUsers);
-        updateUser.mockResolvedValue(updatedUser);
+        getAdminUsers.mockResolvedValue(adminUsers);
+        updateAdminUser.mockResolvedValue(updatedUser);
 
-        render(<Form />);
+        render(<Form adminToken="token-123" isAdmin />);
 
         const row = (await screen.findByText('Clem')).closest('tr');
 
@@ -271,14 +339,14 @@ describe('Form', () => {
         fireEvent.change(screen.getByLabelText(/^code postal/i), { target: { value: '69002' } });
         fireEvent.click(screen.getByDisplayValue(/mettre à jour/i));
 
-        await waitFor(() => expect(updateUser).toHaveBeenCalledWith(1, {
+        await waitFor(() => expect(updateAdminUser).toHaveBeenCalledWith(1, {
             name: 'Machtelinckx',
             firstName: 'Clem',
             birthDate: '1990-05-05',
             email: 'clem@email.com',
             city: 'Lyon',
             postalCode: '69002',
-        }));
+        }, 'token-123'));
 
         expect(await screen.findByRole('status')).toHaveTextContent(/utilisateur mis à jour avec succès/i);
         expect(screen.getByText('Lyon')).toBeInTheDocument();
@@ -287,10 +355,10 @@ describe('Form', () => {
         expect(screen.getByDisplayValue(/sauvegarder/i)).toBeDisabled();
     });
 
-    it('can cancel edit mode', async () => {
-        getUsers.mockResolvedValue(apiUsers);
+    it('can cancel admin edit mode', async () => {
+        getAdminUsers.mockResolvedValue(adminUsers);
 
-        render(<Form />);
+        render(<Form adminToken="token-123" isAdmin />);
 
         const row = (await screen.findByText('Clem')).closest('tr');
 
@@ -302,17 +370,17 @@ describe('Form', () => {
         expect(screen.getByDisplayValue(/sauvegarder/i)).toBeDisabled();
     });
 
-    it('resets the form when the edited user is deleted', async () => {
-        getUsers.mockResolvedValue(apiUsers);
+    it('resets the form when the edited user is deleted by an admin', async () => {
+        getAdminUsers.mockResolvedValue(adminUsers);
 
-        render(<Form />);
+        render(<Form adminToken="token-123" isAdmin />);
 
         const row = (await screen.findByText('Clem')).closest('tr');
 
         fireEvent.click(within(row).getByRole('button', { name: /modifier/i }));
         fireEvent.click(within(row).getByRole('button', { name: /supprimer/i }));
 
-        await waitFor(() => expect(deleteUser).toHaveBeenCalledWith(1));
+        await waitFor(() => expect(deleteAdminUser).toHaveBeenCalledWith(1, 'token-123'));
 
         await waitFor(() => expect(screen.getByLabelText(/^nom/i)).toHaveValue(''));
         expect(screen.queryByRole('button', { name: /annuler/i })).not.toBeInTheDocument();

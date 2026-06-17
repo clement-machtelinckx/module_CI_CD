@@ -6,6 +6,9 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${MYSQL_DATABASE}
+      EMAIL_ADMIN: ${EMAIL_ADMIN}
+      PASSWORD_ADMIN: ${PASSWORD_ADMIN}
+      ADMIN_PASSWORD_SALT: ${ADMIN_PASSWORD_SALT}
     ports:
       - "3306:3306"
     volumes:
@@ -54,6 +57,8 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_PORT: 3306
+      ADMIN_PASSWORD_SALT: ${ADMIN_PASSWORD_SALT}
+      ADMIN_TOKEN_SECRET: ${ADMIN_TOKEN_SECRET}
     depends_on:
       db:
         condition: service_healthy

@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+    deleteAdminUser,
+    getAdminUsers,
+    updateAdminUser,
+} from '../services/adminService.js';
 import {
     createUser,
-    deleteUser,
     getUsers,
-    updateUser,
 } from '../services/userService.js';
 import {
     isCPValid,
@@ -79,10 +82,10 @@ function validateUser(data) {
 /**
  * Affiche le formulaire d'inscription, les messages de validation
  * et la liste des inscrits recuperes depuis l'API.
- * @param {{ onUsersChange?: (count: number) => void }} props Props du composant.
+ * @param {{ adminToken?: string, isAdmin?: boolean, onUsersChange?: (count: number) => void }} props Props du composant.
  * @returns {JSX.Element} Composant formulaire.
  */
-export default function Form({ onUsersChange = noop }) {
+export default function Form({ adminToken = '', isAdmin = false, onUsersChange = noop }) {
     const [formValues, setFormValues] = useState(initialFormValues);
     const [users, setUsers] = useState([]);
     const [editingUserId, setEditingUserId] = useState(null);
@@ -93,26 +96,28 @@ export default function Form({ onUsersChange = noop }) {
 
     const isSubmitDisabled = Object.values(formValues).some((value) => value.trim() === '');
 
-    useEffect(() => {
-        async function loadUsers() {
-            setIsLoading(true);
+    const loadUsers = useCallback(async () => {
+        setIsLoading(true);
 
-            try {
-                const apiUsers = await getUsers();
+        try {
+            const apiUsers = isAdmin
+                ? await getAdminUsers(adminToken)
+                : await getUsers();
 
-                setUsers(apiUsers);
-                onUsersChange(apiUsers.length);
-                setApiError('');
-            } catch (error) {
-                console.error(error);
-                setApiError("Impossible de récupérer les utilisateurs depuis l'API.");
-            } finally {
-                setIsLoading(false);
-            }
+            setUsers(apiUsers);
+            onUsersChange(apiUsers.length);
+            setApiError('');
+        } catch (error) {
+            console.error(error);
+            setApiError("Impossible de récupérer les utilisateurs depuis l'API.");
+        } finally {
+            setIsLoading(false);
         }
+    }, [adminToken, isAdmin, onUsersChange]);
 
+    useEffect(() => {
         loadUsers();
-    }, [onUsersChange]);
+    }, [loadUsers]);
 
     const syncUsers = (users) => {
         setUsers(users);
@@ -140,7 +145,7 @@ export default function Form({ onUsersChange = noop }) {
 
     /**
      * Valide le formulaire, enregistre l'utilisateur via l'API
-     * puis met a jour la liste locale si tout est correct.
+     * puis rafraichit la liste si tout est correct.
      * @param {React.FormEvent<HTMLFormElement>} event Evenement de soumission du formulaire.
      * @returns {Promise<void>}
      */
@@ -165,7 +170,7 @@ export default function Form({ onUsersChange = noop }) {
 
         try {
             if (editingUserId) {
-                const updatedUser = await updateUser(editingUserId, data);
+                const updatedUser = await updateAdminUser(editingUserId, data, adminToken);
                 const updatedUsers = users.map((user) => (
                     user.id === editingUserId ? updatedUser : user
                 ));
@@ -173,10 +178,8 @@ export default function Form({ onUsersChange = noop }) {
                 syncUsers(updatedUsers);
                 setSuccessMessage('Utilisateur mis à jour avec succès !');
             } else {
-                const createdUser = await createUser(data);
-                const updatedUsers = [...users, createdUser];
-
-                syncUsers(updatedUsers);
+                await createUser(data);
+                await loadUsers();
                 setSuccessMessage('Utilisateur enregistré avec succès !');
             }
 
@@ -191,7 +194,7 @@ export default function Form({ onUsersChange = noop }) {
 
     const handleDelete = async (userId) => {
         try {
-            await deleteUser(userId);
+            await deleteAdminUser(userId, adminToken);
 
             const updatedUsers = users.filter((user) => user.id !== userId);
             syncUsers(updatedUsers);
@@ -285,11 +288,11 @@ export default function Form({ onUsersChange = noop }) {
                         <tr>
                             <th scope="col">Nom</th>
                             <th scope="col">Prénom</th>
-                            <th scope="col">Email</th>
                             <th scope="col">Ville</th>
-                            <th scope="col">Code postal</th>
-                            <th scope="col">Date de naissance</th>
-                            <th scope="col">Actions</th>
+                            {isAdmin && <th scope="col">Email</th>}
+                            {isAdmin && <th scope="col">Code postal</th>}
+                            {isAdmin && <th scope="col">Date de naissance</th>}
+                            {isAdmin && <th scope="col">Actions</th>}
                         </tr>
                     </thead>
 
@@ -298,14 +301,16 @@ export default function Form({ onUsersChange = noop }) {
                             <tr key={user.id}>
                                 <td>{user.name}</td>
                                 <td>{user.firstName}</td>
-                                <td>{user.email}</td>
                                 <td>{user.city}</td>
-                                <td>{user.postalCode}</td>
-                                <td>{String(user.birthDate).slice(0, 10)}</td>
-                                <td>
-                                    <button className="button" type="button" onClick={() => handleEdit(user)}>Modifier</button>
-                                    <button className="button" type="button" onClick={() => handleDelete(user.id)}>Supprimer</button>
-                                </td>
+                                {isAdmin && <td>{user.email}</td>}
+                                {isAdmin && <td>{user.postalCode}</td>}
+                                {isAdmin && <td>{String(user.birthDate).slice(0, 10)}</td>}
+                                {isAdmin && (
+                                    <td>
+                                        <button className="button" type="button" onClick={() => handleEdit(user)}>Modifier</button>
+                                        <button className="button" type="button" onClick={() => handleDelete(user.id)}>Supprimer</button>
+                                    </td>
+                                )}
                             </tr>
                         ))}
                     </tbody>

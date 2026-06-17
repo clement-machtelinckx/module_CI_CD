@@ -21,15 +21,3 @@ export async function createUser(user) {
 
     return response.data;
 }
-
-export async function updateUser(id, partialUser) {
-    const response = await createApiClient().patch(`/users/${id}`, partialUser);
-
-    return response.data;
-}
-
-export async function deleteUser(id) {
-    const response = await createApiClient().delete(`/users/${id}`);
-
-    return response.data;
-}
