@@ -283,6 +283,9 @@ jobs:
       - name: Pull Vercel environment
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8
+        
       - name: Build Vercel project
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
