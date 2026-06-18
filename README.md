@@ -152,4 +152,4 @@ package.json
 
 - [docs](https://clement-machtelinckx.github.io/module_CI_CD/docs/index.html)
 
-test
+
