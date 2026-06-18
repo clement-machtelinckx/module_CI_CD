@@ -26,5 +26,9 @@ public/docs
 
 dist/
 
+# Python
+__pycache__/
+*.pyc
+
 # env
 .env
