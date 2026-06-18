@@ -1,57 +1,99 @@
-# tp CI/CD
+# TP CI/CD - React, FastAPI et MySQL
 
+Application de TP CI/CD avec un frontend React, une API FastAPI et une base MySQL.
 
+Fonctionnalites principales :
 
-## Stack technique
+- formulaire utilisateur sauvegarde en base de donnees ;
+- liste publique avec donnees reduites : nom, prenom, ville ;
+- connexion administrateur ;
+- affichage admin des donnees privees ;
+- suppression d'un utilisateur par un admin.
 
-- React 19
-- Create React App
-- JavaScript / JSX
-- Jest
-- React Testing Library
-- JSDoc
+## Stack
+
+- React / Create React App
+- FastAPI
+- MySQL
+- Adminer
+- Docker / Docker Compose
 - GitHub Actions
 - GitHub Pages
+- Vercel
+- Aiven MySQL
+- Jest / React Testing Library
+- Cypress
+- JSDoc
 
-## Pre-requis
+## Installation locale
 
-- Node.js 18+ recommande
-- npm
+Prerequis :
 
-## Installation
+- Node.js et npm
+- Docker et Docker Compose
+
+Installer les dependances :
 
 ```bash
 npm install
 ```
 
-## Lancement en local
+Creer le fichier d'environnement local :
+
+```bash
+cp .env.example .env
+```
+
+Remplir les variables dans `.env` avec les valeurs locales necessaires. Ne pas commiter ce fichier.
+
+Lancer toute la stack locale :
+
+```bash
+docker compose up -d --build
+```
+
+## URLs locales
+
+- Front React : http://localhost:3000
+- Backend FastAPI : http://localhost:8000
+- Swagger local : http://localhost:8000/docs
+- Adminer : http://localhost:8080
+
+Pour arreter la stack :
+
+```bash
+docker compose down -v --remove-orphans
+```
+
+## Lancement front seul
+
+Pour lancer uniquement le frontend en developpement :
 
 ```bash
 npm start
 ```
 
-L'application est alors accessible sur `http://localhost:3000`.
+Le front est alors accessible sur `http://localhost:3000`.
 
-## Lancement des tests
+## Tests
+
+Tests unitaires et integration React :
 
 ```bash
 npm test
 ```
 
-## Lancement de la couverture de tests
+Couverture de tests :
 
 ```bash
 npm run test:coverage
 ```
 
-La configuration de couverture exclut :
+Les tests Cypress E2E sont lances dans la pipeline GitHub Actions avec Docker Compose.
 
-- `src/index.js`
-- `src/reportWebVitals.js`
-- `src/setupTests.js`
-- les fichiers `*.test.js` et `*.test.jsx`
+## Documentation JSDoc
 
-## Generation de la documentation JSDoc
+Generer la documentation :
 
 ```bash
 npm run jsdoc
@@ -59,13 +101,13 @@ npm run jsdoc
 
 La documentation est generee dans `public/docs`.
 
-## Build de production
+## Build React
 
 ```bash
 npm run build
 ```
 
-## Deploiement GitHub Pages
+## Deploiement GitHub Pages manuel
 
 ```bash
 npm run deploy
@@ -73,84 +115,41 @@ npm run deploy
 
 ## CI/CD
 
-### Tests, build et documentation
+Le workflow GitHub Actions se lance sur `push` et `pull_request` vers `master`.
 
-Le workflow GitHub Actions se lance sur les evenements `push` et `pull_request` vers la branche `master`.
+Il effectue notamment :
 
-Le job `build_test` execute les commandes suivantes :
+- installation des dependances ;
+- tests unitaires et coverage ;
+- generation JSDoc ;
+- build React ;
+- lancement Docker Compose ;
+- healthchecks de l'infrastructure ;
+- tests Cypress E2E ;
+- build et push des images Docker Hub ;
+- deploiement du frontend sur GitHub Pages ;
+- deploiement du backend sur Vercel.
 
-- `npm ci`
-- `npm run jsdoc`
-- `npm run build --if-present`
-- `npm test`
+Les secrets ne sont pas stockes dans le repository. Ils sont geres avec GitHub Secrets et les variables d'environnement Vercel.
 
-Ce job gere egalement l'envoi de la couverture de tests vers Codecov.
+## Base de donnees
 
-### Deploiement GitHub Pages
+Les migrations locales sont dans `database/`.
 
-Une fois le job `build_test` termine avec succes, le dossier `build` est upload comme artifact GitHub Pages.
+Tables principales :
 
-Le job `deploy` depend du succes de `build_test` et publie ensuite cet artifact sur GitHub Pages.
+- `users` : utilisateurs crees depuis le formulaire ;
+- `admins` : comptes administrateurs.
 
-### Publication npm
+En local Docker, l'admin initial est cree via les variables d'environnement. En production, la base MySQL est hebergee sur Aiven et les migrations sont appliquees separement.
 
-Le job `publish_npm` se lance uniquement lors d'un `push`.
+## Liens de production
 
-Avant toute publication, le workflow lit le `name` et la `version` presents dans `package.json`, puis verifie avec `npm view` si cette combinaison existe deja sur npm.
-
-Si cette version existe deja sur npm, la publication est ignoree.
-
-Si la version est nouvelle, le workflow execute :
-
-- `npm ci`
-- `npm run build-npm`
-- `npm publish --access public`
-
-### Publier une nouvelle version
-
-Pour publier une nouvelle version, il faut d'abord modifier la version dans `package.json`, soit manuellement, soit en local avec une commande comme :
-
-- `npm version patch`
-- `npm version minor`
-- `npm version major`
-
-Apres le changement de version, il faut commit puis push.
-
-Au moment du `push`, GitHub Actions verifiera si cette version existe deja sur npm et ne publiera le package que si elle n'existe pas encore.
-
-
-
-
-## Structure rapide du projet
-
-```text
-src/
-  App.js
-  Composants/
-    Count.jsx
-    Form.jsx
-  utils/
-    module.js
-public/
-  docs/
-.github/
-  workflows/
-    build_test_deploy_react.yml
-jsdoc.config.json
-package.json
-```
-
-
-[git hub](https://github.com/clement-machtelinckx/module_CI_CD)
-
-
-## URL de l'application deployee
-
-- [app deployer](https://clement-machtelinckx.github.io/module_CI_CD/)
-
-## URL de la documentation generee
-
-- [docs](https://clement-machtelinckx.github.io/module_CI_CD/docs/index.html)
-
-test
-
+- Repository GitHub : https://github.com/clement-machtelinckx/module_CI_CD
+- Frontend GitHub Pages : https://clement-machtelinckx.github.io/module_CI_CD/
+- Documentation JSDoc : https://clement-machtelinckx.github.io/module_CI_CD/docs/index.html
+- Backend Vercel : https://module-ci-cd.vercel.app
+- Swagger backend : https://module-ci-cd.vercel.app/docs
+- Endpoint public users : https://module-ci-cd.vercel.app/users
+- Docker Hub frontend : https://hub.docker.com/r/yazii/frontend
+- Docker Hub backend : https://hub.docker.com/r/yazii/backend
