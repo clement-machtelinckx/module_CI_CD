@@ -1,1 +1,4 @@
--r backend/requirements.txt
+fastapi
+uvicorn[standard]
+mysql-connector-python
+EOF
