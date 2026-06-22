@@ -1,0 +1,35 @@
+name: Keep production database alive
+
+on:
+  schedule:
+    # Exécution quotidienne vers 07:23 UTC.
+    # GitHub Actions peut lancer les workflows planifiés avec quelques minutes de retard.
+    - cron: "23 7 * * *"
+
+  # Permet de vérifier manuellement le workflow depuis l’interface GitHub Actions.
+  workflow_dispatch:
+
+jobs:
+  ping-production-api:
+    name: Ping production API and database
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Call production users endpoint
+        run: |
+          echo "Calling the production API to keep the database active..."
+
+          curl \
+            --fail \
+            --show-error \
+            --silent \
+            --retry 3 \
+            --retry-all-errors \
+            --retry-delay 10 \
+            --connect-timeout 20 \
+            --max-time 60 \
+            https://module-ci-cd.vercel.app/users
+
+          echo
+          echo "Production API and database successfully reached."
